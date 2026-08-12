@@ -23,10 +23,12 @@ and see `spec/README.md` for how the checks in this repo relate to it.
   the pipeline. The links check, the evidence check, the secrets scan, and the
   deploy itself only run in CI; to run the links check locally, matching
   `.github/workflows/checks.yml`, serve the build with `pnpm preview` and crawl
-  the configured GitHub Pages base-path URL (e.g.
-  `pnpm dlx linkinator http://localhost:4321/comp4020-ass1-Naaeeen/ --recurse --silent --status-code 0:warn`)
-  rather than pointing linkinator at `./dist` directly, since a root-relative
-  crawl won't reproduce base-path-only link breakage.
+  the configured GitHub Pages base-path URL
+  (`pnpm dlx linkinator http://localhost:4321/comp4020-ass1-Naaeeen/ --recurse --silent`,
+  the same flags CI uses --- don't add `--status-code` overrides, or a link
+  that warns locally still fails the pipeline) rather than pointing linkinator
+  at `./dist` directly, since a root-relative crawl won't reproduce
+  base-path-only link breakage.
 - To see what the page actually looks like rather than what you assume it looks
   like, open it in a browser (the `agent-browser` CLI, documented on
   [the course site](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/topics/backpressure/#agent-browser-the-rendered-page-as-ground-truth),

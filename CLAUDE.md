@@ -21,9 +21,12 @@ and see `spec/README.md` for how the checks in this repo relate to it.
 - Before you push, run `pnpm check`. It runs most of what CI runs --- build,
   lint, and the spec --- so you catch those in seconds instead of waiting for
   the pipeline. The links check, the evidence check, the secrets scan, and the
-  deploy itself only run in CI; run `pnpm dlx linkinator ./dist --silent`
-  locally against a fresh `pnpm build` for the links check without waiting for
-  CI.
+  deploy itself only run in CI; to run the links check locally, matching
+  `.github/workflows/checks.yml`, serve the build with `pnpm preview` and crawl
+  the configured GitHub Pages base-path URL (e.g.
+  `pnpm dlx linkinator http://localhost:4321/comp4020-ass1-Naaeeen/ --recurse --silent --status-code 0:warn`)
+  rather than pointing linkinator at `./dist` directly, since a root-relative
+  crawl won't reproduce base-path-only link breakage.
 - To see what the page actually looks like rather than what you assume it looks
   like, open it in a browser (the `agent-browser` CLI, documented on
   [the course site](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/topics/backpressure/#agent-browser-the-rendered-page-as-ground-truth),
@@ -34,7 +37,9 @@ and see `spec/README.md` for how the checks in this repo relate to it.
   you the file, the line, or the contract. Treat a red check as authoritative
   --- the page is wrong until the check is green, not until you decide it should
   be.
-- Commit when the checks pass. Never commit a red state.
+- Commit when the checks pass. Never commit an unexpectedly red state --- the
+  documented exception is a deliberately red spec-first commit (the week's new
+  `spec/*.test.ts` failing before the prototype exists to satisfy it).
 
 ## The checks (your sensors)
 
@@ -52,7 +57,7 @@ They also carry a mark at a crit: the sweep runs fifteen minutes after your
 cutoff, and green checks there are worth half that week's shipped mark. Still
 running counts as not green, so ship with time for CI to finish.
 
-- **typecheck** --- `tsc --noEmit` runs first in `pnpm check`, so a type error
+- **typecheck** --- `astro check` runs first in `pnpm check`, so a type error
   stops the roster before the build even starts. The types are extra
   backpressure: a red here is the compiler telling you a claim in the code is
   false.
@@ -97,11 +102,11 @@ CI machine, not proof the site is fast for real users.
 
 ## The stack is swappable
 
-Out of the box this is plain HTML/CSS/TypeScript on Vite, and every `.html` file
-in the repo is a page: add pages, link them, and the build picks them up with no
-config. That's a default, not a rule (unless the week's spec says otherwise).
-You can swap in Astro or any other static generator, because nothing in CI names
-a tool --- the whole contract is:
+This repo currently uses Astro in static-output mode (the starter template
+originally shipped plain HTML/CSS/TypeScript on Vite; this repo has moved off
+that). That's a default, not a rule (unless the week's spec says otherwise).
+You can swap to a different static generator, because nothing in CI names a
+tool --- the whole contract is:
 
 - `pnpm build` emits the complete site into `dist/`
 - the `package.json` scripts (`check`, `check:evidence`, `build`) keep working
@@ -160,3 +165,12 @@ catching you out, a fact about the stack the agent keeps getting wrong --- write
 it down here. Growing this file is the work of harness engineering, and the gap
 between this boilerplate and your own version is part of what your prototype
 says about the developer you're becoming.
+
+## Carried forward from Crit 1
+
+General conventions that held up last week, kept regardless of this week's
+stack or brief:
+
+- Every page uses consistent semantic navigation and exactly one `<h1>`.
+- Run `pnpm check` before accepting implementation changes.
+- Avoid remote fonts and unnecessary external assets.

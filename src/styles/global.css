@@ -966,6 +966,515 @@ body {
   }
 }
 
+/* ---- observer gateway and footprint coda ----------------------------- */
+
+.trace-aperture {
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.trace-aperture:focus-visible {
+  outline: 3px solid #fff8e8;
+  outline-offset: calc(0.7 * var(--u));
+  border-radius: 50%;
+}
+
+.trace-aperture:hover .receiver-rim,
+.trace-aperture:focus-visible .receiver-rim,
+.stage.is-trace-ready .receiver-rim {
+  filter: brightness(1.35);
+  scale: 1.06;
+}
+
+.receiver-hint {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 1.1rem);
+  width: max-content;
+  translate: 0 -50%;
+  color: rgb(255 255 255 / 74%);
+  font-size: clamp(0.55rem, 0.9vmin, 0.68rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0;
+  transition:
+    opacity 0.24s ease,
+    translate 0.24s ease;
+}
+
+.stage.is-trace-ready .receiver-hint,
+.trace-aperture:hover .receiver-hint,
+.trace-aperture:focus-visible .receiver-hint {
+  translate: 0.35rem -50%;
+  opacity: 1;
+}
+
+.portal-field {
+  position: absolute;
+  inset: 0;
+  z-index: 19;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.portal-particle {
+  position: absolute;
+  top: var(--observer-y);
+  left: var(--observer-x);
+  width: var(--size);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--sun-color, #ffd3a4);
+  box-shadow: 0 0 1.2rem currentcolor;
+  opacity: 0;
+}
+
+.portal-particle:nth-child(3n) {
+  width: calc(var(--size) * 2.8);
+  aspect-ratio: 5;
+  border-radius: 0;
+  background: #fff5d9;
+}
+
+.portal-particle:nth-child(4n) {
+  background: #83b6ff;
+}
+
+.footprint-coda {
+  --paper: #e9e8e2;
+  --ink: #16171b;
+  --signal: #fa4f38;
+  --electric: #465aff;
+
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  overflow: auto;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 82% 14%, rgb(70 90 255 / 13%), transparent 28%),
+    radial-gradient(circle at 15% 88%, rgb(250 79 56 / 12%), transparent 24%),
+    var(--paper);
+  clip-path: circle(0 at var(--observer-x) var(--observer-y));
+  opacity: 0;
+  transition:
+    clip-path 0.72s cubic-bezier(0.76, 0, 0.24, 1),
+    opacity 0.18s linear;
+}
+
+.footprint-coda[hidden] {
+  display: none;
+}
+
+.stage.is-coda-open .footprint-coda {
+  clip-path: circle(155vmax at var(--observer-x) var(--observer-y));
+  opacity: 1;
+}
+
+.coda-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgb(22 23 27 / 6%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(22 23 27 / 6%) 1px, transparent 1px);
+  background-size: 2rem 2rem;
+  mask-image: linear-gradient(to bottom, black, transparent 86%);
+  pointer-events: none;
+}
+
+.coda-shell {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template:
+    "header header" auto
+    "intro deck" minmax(0, 1fr)
+    "footer footer" auto
+    / minmax(18rem, 0.82fr) minmax(26rem, 1.18fr);
+  gap: clamp(1.4rem, 3vw, 4rem);
+  min-height: 100%;
+  padding: clamp(1.25rem, 3vw, 3rem);
+}
+
+.coda-header {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid rgb(22 23 27 / 24%);
+}
+
+.coda-wordmark,
+.coda-local,
+.coda-index,
+.coda-boundary,
+.trace-card-number {
+  margin: 0;
+  font-family: ui-monospace, "Cascadia Mono", monospace;
+  font-size: clamp(0.62rem, 0.9vw, 0.76rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.coda-wordmark {
+  font-weight: 700;
+}
+
+.coda-local {
+  color: rgb(22 23 27 / 58%);
+}
+
+.coda-intro {
+  grid-area: intro;
+  align-self: center;
+  max-width: 37rem;
+}
+
+.coda-index {
+  color: var(--signal);
+}
+
+.coda-intro h2 {
+  max-width: 9ch;
+  margin: 0.8rem 0 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(3.4rem, 6.4vw, 7.4rem);
+  font-weight: 400;
+  line-height: 0.86;
+  letter-spacing: -0.055em;
+}
+
+.coda-intro h2:focus {
+  outline: none;
+}
+
+.coda-lede {
+  max-width: 46ch;
+  margin: clamp(1.2rem, 2.5vh, 2rem) 0 0;
+  font-size: clamp(0.92rem, 1.25vw, 1.12rem);
+  line-height: 1.55;
+  text-wrap: balance;
+}
+
+.coda-boundary {
+  max-width: 52ch;
+  margin: 1.2rem 0 0;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgb(22 23 27 / 20%);
+  color: rgb(22 23 27 / 58%);
+  line-height: 1.5;
+}
+
+.trace-deck {
+  grid-area: deck;
+  align-self: center;
+  min-width: 0;
+  border-left: 1px solid rgb(22 23 27 / 24%);
+  padding-left: clamp(1.4rem, 3vw, 3rem);
+}
+
+.trace-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: min(50vh, 31rem);
+  padding: clamp(1.3rem, 2.5vw, 2.4rem);
+  border-top: 0.35rem solid var(--signal);
+  background: rgb(255 255 255 / 58%);
+  box-shadow: 0 1.4rem 4rem rgb(22 23 27 / 12%);
+}
+
+.trace-card[hidden] {
+  display: none;
+}
+
+.trace-card::after {
+  content: "";
+  position: absolute;
+  right: 1.4rem;
+  bottom: 1.4rem;
+  width: 0.65rem;
+  aspect-ratio: 1;
+  background: var(--electric);
+  box-shadow:
+    -1rem 0 0 rgb(70 90 255 / 50%),
+    -2rem 0 0 rgb(70 90 255 / 20%);
+}
+
+.trace-card-number {
+  color: var(--signal);
+}
+
+.trace-card h3 {
+  max-width: 17ch;
+  margin: 1rem 0 0;
+  font-size: clamp(1.35rem, 2.7vw, 2.6rem);
+  font-weight: 520;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+
+.trace-hero {
+  margin: auto 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(3.6rem, 8vw, 8.5rem);
+  line-height: 0.9;
+  letter-spacing: -0.06em;
+  color: var(--electric);
+}
+
+.trace-copy {
+  max-width: 48ch;
+  margin: 1.2rem 0 0;
+  color: rgb(22 23 27 / 65%);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.trace-micro {
+  margin: 0.7rem 0 0;
+  color: rgb(22 23 27 / 48%);
+  font-family: ui-monospace, "Cascadia Mono", monospace;
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+}
+
+.trace-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin: auto 0 0;
+}
+
+.trace-facts div {
+  padding-top: 0.7rem;
+  border-top: 1px solid rgb(22 23 27 / 22%);
+}
+
+.trace-facts dt {
+  color: rgb(22 23 27 / 48%);
+  font-size: 0.64rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.trace-facts dd {
+  overflow-wrap: anywhere;
+  margin: 0.35rem 0 0;
+  font-size: clamp(0.92rem, 1.5vw, 1.25rem);
+  line-height: 1.2;
+}
+
+.trace-facts-wide {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 2rem;
+}
+
+.zero-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin: auto 0 0;
+}
+
+.zero-grid p {
+  margin: 0;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgb(22 23 27 / 22%);
+}
+
+.zero-grid strong,
+.zero-grid span {
+  display: block;
+}
+
+.zero-grid strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(3rem, 6vw, 6rem);
+  font-weight: 400;
+  line-height: 1;
+  color: var(--signal);
+}
+
+.zero-grid span {
+  color: rgb(22 23 27 / 58%);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.trace-nav {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.9rem;
+}
+
+.trace-nav button,
+.coda-footer button {
+  min-height: 2.75rem;
+  padding: 0.6rem 0;
+  border: 0;
+  border-bottom: 1px solid currentcolor;
+  color: var(--ink);
+  background: transparent;
+  font: inherit;
+  font-size: 0.72rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.coda-footer button {
+  min-width: 10rem;
+}
+
+.trace-nav button:first-child {
+  text-align: left;
+}
+
+.trace-nav button:last-child {
+  text-align: right;
+}
+
+.trace-nav button:disabled {
+  cursor: default;
+  opacity: 0.3;
+}
+
+.trace-nav output {
+  font-family: ui-monospace, "Cascadia Mono", monospace;
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.trace-nav button:focus-visible,
+.coda-footer button:focus-visible {
+  outline: 3px solid var(--electric);
+  outline-offset: 3px;
+}
+
+.coda-footer {
+  grid-area: footer;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 0.4rem;
+}
+
+.coda-erase {
+  color: var(--signal) !important;
+}
+
+@media (width < 60rem) {
+  .coda-shell {
+    grid-template:
+      "header" auto
+      "intro" auto
+      "deck" minmax(0, 1fr)
+      "footer" auto
+      / minmax(0, 1fr);
+    gap: 0.9rem;
+    padding: max(1rem, env(safe-area-inset-top)) 1rem
+      max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .coda-local {
+    display: none;
+  }
+
+  .coda-intro {
+    align-self: start;
+  }
+
+  .coda-intro h2 {
+    max-width: 12ch;
+    margin-top: 0.35rem;
+    font-size: clamp(2.2rem, 10.8vw, 3.2rem);
+    line-height: 0.92;
+  }
+
+  .coda-lede {
+    margin-top: 0.65rem;
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+
+  .coda-boundary {
+    margin-top: 0.6rem;
+    padding-top: 0.5rem;
+    font-size: 0.57rem;
+  }
+
+  .trace-deck {
+    align-self: stretch;
+    border-top: 1px solid rgb(22 23 27 / 24%);
+    border-left: 0;
+    padding-top: 0.8rem;
+    padding-left: 0;
+  }
+
+  .trace-card {
+    min-height: 15.5rem;
+    padding: 1rem;
+  }
+
+  .trace-card h3 {
+    margin-top: 0.5rem;
+    font-size: 1.25rem;
+  }
+
+  .trace-hero {
+    font-size: clamp(2.8rem, 14vw, 4.4rem);
+  }
+
+  .trace-copy {
+    margin-top: 0.7rem;
+    font-size: 0.72rem;
+  }
+
+  .trace-facts,
+  .trace-facts-wide {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.4rem;
+    margin-top: 0.8rem;
+  }
+
+  .trace-facts dt,
+  .zero-grid span {
+    font-size: 0.54rem;
+  }
+
+  .trace-facts dd {
+    font-size: 0.8rem;
+  }
+
+  .zero-grid {
+    gap: 0.4rem;
+    margin-top: 0.8rem;
+  }
+
+  .zero-grid strong {
+    font-size: 2.8rem;
+  }
+
+  .trace-nav {
+    margin-top: 0.55rem;
+  }
+
+  .coda-footer button {
+    min-width: 0;
+  }
+}
+
 /* ---- motion ----------------------------------------------------------- */
 
 /* While scrubbing, state tracks the slider. These short settles only smooth
@@ -1089,5 +1598,63 @@ body {
     100% {
       scale: 1 var(--band-t, 0.6);
     }
+  }
+}
+
+
+@media (prefers-reduced-motion: no-preference) {
+  .receiver-rim {
+    transition:
+      filter 0.24s ease,
+      scale 0.24s ease;
+  }
+
+  .stage.is-portal-opening .portal-particle {
+    animation: portal-flight 0.88s cubic-bezier(0.18, 0.72, 0.24, 1) both;
+    animation-delay: var(--delay);
+  }
+
+  .trace-card:not([hidden]) {
+    animation: trace-card-arrive 0.42s cubic-bezier(0.22, 0.68, 0.24, 1) both;
+  }
+
+  @keyframes portal-flight {
+    0% {
+      transform: translate(-50%, -50%) rotate(0deg) scale(0.2);
+      opacity: 0;
+    }
+
+    16% {
+      opacity: 1;
+    }
+
+    100% {
+      transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0.05);
+      opacity: 0;
+    }
+  }
+
+  @keyframes trace-card-arrive {
+    0% {
+      transform: translateY(1rem);
+      opacity: 0;
+    }
+
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footprint-coda,
+  .receiver-hint,
+  .receiver-rim {
+    transition: none;
+  }
+
+  .portal-particle {
+    display: none;
   }
 }

@@ -14,6 +14,17 @@ import {
 const scene = deriveScene(INITIAL_ELEVATION);
 const sceneStyleAttr = sceneStyle(scene);
 const AIR_BANDS = [0, 1, 2, 3];
+const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
+  const angle = (index / 24) * Math.PI * 2 + (index % 3) * 0.08;
+  const distance = 30 + (index % 6) * 8;
+  return {
+    x: (Math.cos(angle) * distance).toFixed(2),
+    y: (Math.sin(angle) * distance).toFixed(2),
+    rotation: index * 47,
+    delay: (index % 8) * 18,
+    size: 3 + (index % 4) * 2,
+  };
+});
 ---
 
 <Layout title="The Sun Never Turned Red">
@@ -94,10 +105,43 @@ const AIR_BANDS = [0, 1, 2, 3];
       <!-- The receiver: a graduated aperture, so the destination reads as an
            instrument collecting light rather than a face looking at it. The
            core brightens with whatever survived the crossing. -->
-      <div class="receiver">
-        <span class="receiver-rim"></span>
-        <span class="receiver-iris"></span>
-        <span class="receiver-core"></span>
+      <button
+        class="receiver trace-aperture"
+        data-testid="trace-aperture"
+        type="button"
+        aria-label="Open the observer's session trace"
+        aria-controls="footprint-coda"
+        aria-expanded="false"
+      >
+        <span class="receiver-rim" aria-hidden="true"></span>
+        <span class="receiver-iris" aria-hidden="true"></span>
+        <span class="receiver-core" aria-hidden="true"></span>
+        <span class="receiver-hint" aria-hidden="true">observe the observer</span>
+      </button>
+
+      <div class="portal-field" aria-hidden="true">
+        {
+          PORTAL_PARTICLES.map((particle) => (
+            <span
+              class="portal-particle"
+              data-testid="portal-particle"
+              aria-hidden="true"
+              style={
+                "--tx:" +
+                particle.x +
+                "vw;--ty:" +
+                particle.y +
+                "vh;--rot:" +
+                particle.rotation +
+                "deg;--delay:" +
+                particle.delay +
+                "ms;--size:" +
+                particle.size +
+                "px;"
+              }
+            />
+          ))
+        }
       </div>
 
       <div class="received-colour" data-testid="received-colour">
@@ -203,6 +247,96 @@ const AIR_BANDS = [0, 1, 2, 3];
         Simplified illustration — not a physical simulation.
       </p>
     </div>
+    <section
+      class="footprint-coda"
+      data-testid="footprint-coda"
+      id="footprint-coda"
+      aria-labelledby="footprint-title"
+      aria-hidden="true"
+      hidden
+    >
+      <div class="coda-grid" aria-hidden="true"></div>
+      <div class="coda-shell">
+        <header class="coda-header">
+          <p class="coda-wordmark">OBSERVER / LOCAL TRACE</p>
+          <p class="coda-local">this session · memory only</p>
+        </header>
+
+        <div class="coda-intro">
+          <p class="coda-index">A second observation</p>
+          <h2 id="footprint-title" tabindex="-1">The page had an observer, too.</h2>
+          <p class="coda-lede">
+            You watched the atmosphere turn light into signals. Meanwhile, the page
+            turned this visit into signals — without asking for a sensitive permission.
+          </p>
+          <p class="coda-boundary">
+            This session only. Nothing is saved. Nothing is sent. Reloading erases it.
+          </p>
+        </div>
+
+        <div class="trace-deck" aria-live="polite">
+          <article class="trace-card" data-testid="trace-card" data-trace-card="0">
+            <p class="trace-card-number">01 / TIME</p>
+            <h3>A visit became a timeline.</h3>
+            <p class="trace-hero" data-trace="elapsed">0 seconds</p>
+            <p class="trace-copy">
+              The page can measure how long this tab has been open without knowing your name.
+            </p>
+            <p class="trace-micro">
+              <span data-trace="resizes">0</span> resizes ·
+              <span data-trace="visibility">0</span> tab visibility changes
+            </p>
+          </article>
+
+          <article class="trace-card" data-testid="trace-card" data-trace-card="1" hidden>
+            <p class="trace-card-number">02 / GESTURE</p>
+            <h3>One slider became behaviour.</h3>
+            <p class="trace-hero"><span data-trace="moves">0</span> state changes</p>
+            <dl class="trace-facts">
+              <div><dt>range explored</dt><dd data-trace="range">45° → 45°</dd></div>
+              <div><dt>input modes</dt><dd data-trace="modes">none yet</dd></div>
+            </dl>
+          </article>
+
+          <article class="trace-card" data-testid="trace-card" data-trace-card="2" hidden>
+            <p class="trace-card-number">03 / ENVIRONMENT</p>
+            <h3>Your browser spoke before you typed.</h3>
+            <dl class="trace-facts trace-facts-wide">
+              <div><dt>viewport</dt><dd data-trace="viewport">—</dd></div>
+              <div><dt>pixel ratio</dt><dd data-trace="pixels">—</dd></div>
+              <div><dt>language</dt><dd data-trace="language">—</dd></div>
+              <div><dt>time zone</dt><dd data-trace="timezone">—</dd></div>
+              <div><dt>display preference</dt><dd data-trace="display">—</dd></div>
+            </dl>
+          </article>
+
+          <article class="trace-card trace-card-zero" data-testid="trace-card" data-trace-card="3" hidden>
+            <p class="trace-card-number">04 / BOUNDARY</p>
+            <h3>What this prototype refused to collect.</h3>
+            <div class="zero-grid">
+              <p><strong>0</strong><span>permission prompts</span></p>
+              <p><strong>0</strong><span>trace uploads</span></p>
+              <p><strong>0</strong><span>saved records</span></p>
+            </div>
+            <p class="trace-copy">
+              No camera, microphone, location, cookies, analytics, or persistent fingerprint.
+            </p>
+          </article>
+
+          <nav class="trace-nav" aria-label="Session trace slides">
+            <button type="button" data-trace-previous>Previous signal</button>
+            <output data-trace="progress" aria-live="off">1 / 4</output>
+            <button type="button" data-trace-next>Next signal</button>
+          </nav>
+        </div>
+
+        <footer class="coda-footer">
+          <button class="coda-return" type="button" data-trace-return>Return to the light</button>
+          <button class="coda-erase" type="button" data-trace-erase>Erase this trace</button>
+        </footer>
+      </div>
+    </section>
   </main>
   <script src="../scripts/main.ts"></script>
+  <script src="../scripts/footprint.ts"></script>
 </Layout>

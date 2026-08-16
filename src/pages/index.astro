@@ -176,11 +176,19 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
         </ol>
       </aside>
 
-      <!-- Two labels, both in atmosphere space and anchored to the receiver.
-           Keeping them out of the rotated beam frame means no counter-rotation,
-           and so no chance of the box swinging off-screen at steep angles. -->
+      <div
+        class="horizon-reveal"
+        data-testid="horizon-reveal"
+        aria-live="polite"
+        aria-hidden={!scene.horizonReveal}
+      >
+        <p>The Sun never turned red.</p>
+        <span>The atmosphere changed what reached you.</span>
+      </div>
+
+      <!-- This label stays in atmosphere space rather than the rotated frame,
+           so it cannot swing out of the viewport at steep angles. -->
       <p class="scene-label scene-label-scatter">blue redirected</p>
-      <p class="scene-label scene-label-direct">received</p>
     </div>
 
     <header class="overlay">

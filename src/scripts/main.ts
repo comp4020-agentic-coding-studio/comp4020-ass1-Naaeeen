@@ -33,6 +33,8 @@ export interface SunScene {
   readonly transmission: SpectralTransmission;
   readonly skyColor: string;
   readonly sunColor: string;
+  /** Whether the final thesis should be revealed at this elevation. */
+  readonly horizonReveal: boolean;
   readonly explanation: string;
 }
 
@@ -289,6 +291,7 @@ export function deriveScene(elevationDeg: number): SunScene {
     transmission,
     skyColor,
     sunColor,
+    horizonReveal: clamped <= 8,
     explanation: explain(clamped, t),
   };
 }
@@ -322,6 +325,7 @@ export function sceneStyle(scene: SunScene): string {
     `--t-red:${round(scene.transmission.red)};` +
     `--t-green:${round(scene.transmission.green)};` +
     `--t-blue:${round(scene.transmission.blue)};` +
+    "--horizon-reveal:" + (scene.horizonReveal ? 1 : 0) + ";" +
     bands +
     `--sun-color:${scene.sunColor};` +
     `--sky-color:${scene.skyColor};`
@@ -341,6 +345,7 @@ function init(): void {
   const airMassReadout = document.querySelector<HTMLOutputElement>(
     '[data-testid="airmass-value"]',
   );
+  const horizonReveal = document.querySelector<HTMLElement>('[data-testid="horizon-reveal"]');
   if (!range || !scene || !explanation) return;
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -355,6 +360,7 @@ function init(): void {
     explanation.textContent = next.explanation;
     if (readout) readout.textContent = `${Math.round(next.elevationDeg)}°`;
     if (airMassReadout) airMassReadout.textContent = "×" + next.pathAmount.toFixed(1);
+    horizonReveal?.setAttribute("aria-hidden", String(!next.horizonReveal));
   };
 
   const stopPulse = (): void => {

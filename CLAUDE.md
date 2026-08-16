@@ -33,15 +33,21 @@ and see `spec/README.md` for how the checks in this repo relate to it.
   like, open it in a browser (the `agent-browser` CLI, documented on
   [the course site](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/topics/backpressure/#agent-browser-the-rendered-page-as-ground-truth),
   works well for this). The rendered page is the truth; your mental model of it
-  isn't.
+  isn't. Dev-server behaviour doesn't count as verified: for a major UI slice,
+  check the production build (`pnpm build && pnpm preview`) against
+  `PLAN.md`'s verification conditions, plus a throttled/cold-load pass,
+  before calling it done.
 - When a check fails, read its output before changing anything. Each check below
   names what it measures, and the failure message is the instruction: it tells
   you the file, the line, or the contract. Treat a red check as authoritative
   --- the page is wrong until the check is green, not until you decide it should
   be.
 - Commit when the checks pass. Never commit an unexpectedly red state --- the
-  documented exception is a deliberately red spec-first commit (the week's new
-  `spec/*.test.ts` failing before the prototype exists to satisfy it).
+  one documented exception is a deliberately red spec-first commit (a new
+  `spec/*.test.ts` failing narrowly because the feature it describes doesn't
+  exist yet), with the next commit --- once approved --- being the smallest
+  implementation that returns the complete suite to green. Never weaken,
+  delete, or edit a test to make it pass --- fix the implementation instead.
 
 ## The checks (your sensors)
 
@@ -128,7 +134,8 @@ commit history, your agent files, and the decisions visible across them. The
 checks above can't see any of that, so a person reads it directly --- which
 means building legibly is part of building well.
 
-- **Commit as you go.** Small, frequent commits are the record of how the work
+- **Commit as you go, at real logical checkpoints** --- not artificial
+  file-count splits. Small, frequent commits are the record of how the work
   came together, and that record is read, not just the final state. A trail that
   grew alongside the code is the strongest evidence of your process; a single
   dump the night before is the weakest.
@@ -176,3 +183,26 @@ stack or brief:
 - Every page uses consistent semantic navigation and exactly one `<h1>`.
 - Run `pnpm check` before accepting implementation changes.
 - Avoid remote fonts and unnecessary external assets.
+
+## This cycle's rebuild (Assignment 1)
+
+- `PLAN.md` is the source of truth for this rebuild's scope and its
+  single-mechanic decision --- including that the core explainer works with
+  zero permissions granted and the optional session-trace coda stays out of
+  scope until its own decision gate. If a prompt or a proposed feature
+  conflicts with this, stop and surface the conflict --- don't silently
+  resolve it either way.
+- After a resume, a compaction, or any context loss, re-read `PLAN.md`,
+  `git status`, and recent `git log` before acting. Never reconstruct a lost
+  instruction from memory --- ask instead.
+- One main writer per implementation slice. Subagents may investigate or
+  review independently, but must not make parallel, overlapping edits.
+- Write tests for the visitor-visible contract: what the visitor does, and
+  what visibly changes in response --- not an assumed internal function or
+  API shape.
+- A report isn't done until it says what's verified, what failed, and what's
+  still unverified, not just what was attempted. A commit hash labelled
+  "full" is the complete 40-character value from `git rev-parse`, not a
+  short form.
+- Don't pre-write `PROCESS.md` moments before the commit that earns them
+  exists.

@@ -1,20 +1,65 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import {
+  deriveScene,
+  sceneStyle,
+  INITIAL_ELEVATION,
+  MIN_ELEVATION,
+  MAX_ELEVATION,
+} from "../scripts/main";
+
+const scene = deriveScene(INITIAL_ELEVATION);
+const sceneStyleAttr = sceneStyle(scene);
 ---
 
-<Layout title="COMP4020 prototype">
+<Layout title="The Sun Never Turned Red">
   <header>
     <nav aria-label="Primary">
       <a href="./">Home</a>
     </nav>
   </header>
   <main>
-    <h1>COMP4020 prototype</h1>
-    <p data-testid="intro">
-      Replace this with your prototype. This week's brief is on the course
-      website; <code>spec/README.md</code> explains how the checks in this repo
-      relate to it.
+    <h1>The Sun Never Turned Red</h1>
+    <p>
+      Drag, touch, or use the arrow keys on the control below to move the
+      Sun. Watch how its light changes on the way down — the Sun itself
+      never turns red.
     </p>
+
+    <div class="controls">
+      <label for="elevation">Sun elevation</label>
+      <input
+        type="range"
+        id="elevation"
+        name="elevation"
+        min={MIN_ELEVATION}
+        max={MAX_ELEVATION}
+        step="1"
+        value={INITIAL_ELEVATION}
+      />
+    </div>
+
+    <div
+      class="scene"
+      data-testid="scene"
+      role="img"
+      aria-label="Sun and atmosphere scene: the Sun's height, colour, and the length of its path through the atmosphere update as you move the elevation control"
+      style={sceneStyleAttr}
+    >
+      <div class="scene-ground"></div>
+      <div class="scene-path-track">
+        <div class="scene-path-fill"></div>
+      </div>
+      <div class="scene-sun"></div>
+    </div>
+
+    <p>
+      <output for="elevation" id="explanation" aria-live="off"
+        >{scene.explanation}</output
+      >
+    </p>
+
+    <p class="disclaimer">Simplified illustration — not a physical simulation.</p>
   </main>
   <script src="../scripts/main.ts"></script>
 </Layout>

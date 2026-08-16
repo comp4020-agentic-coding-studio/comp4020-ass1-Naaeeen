@@ -14,3 +14,81 @@ main {
 a {
   color: #0b5fff;
 }
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+.controls input[type="range"] {
+  flex: 1;
+  max-width: 24rem;
+}
+
+.scene {
+  position: relative;
+  height: 14rem;
+  overflow: hidden;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  background: var(--sky-color, hsl(210deg 65% 60%));
+}
+
+.scene-ground {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 22%;
+  background: #35462f;
+}
+
+.scene-sun {
+  position: absolute;
+  top: var(--sun-top, 45%);
+  left: 50%;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: -1.375rem 0 0 -1.375rem;
+  border-radius: 50%;
+  background: var(--sun-color, hsl(45deg 90% 60%));
+}
+
+.scene-path-track {
+  position: absolute;
+  right: 1rem;
+  bottom: 22%;
+  display: flex;
+  align-items: flex-end;
+  width: 0.75rem;
+  height: 68%;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #ffffff40;
+}
+
+.scene-path-fill {
+  width: 100%;
+  height: var(--path-height, 40%);
+  background: #fffc;
+}
+
+.disclaimer {
+  color: #555;
+  font-size: 0.85rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .scene,
+  .scene-sun {
+    transition:
+      background 0.15s ease,
+      top 0.15s ease;
+  }
+
+  .scene-path-fill {
+    transition: height 0.15s ease;
+  }
+}

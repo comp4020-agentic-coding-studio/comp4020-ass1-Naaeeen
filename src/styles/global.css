@@ -32,7 +32,10 @@ body {
    elevation states is identical at every viewport size. It is clamped by
    width as well as height so the low Sun cannot run off a narrow screen. */
 .stage {
-  --u: min(1.05vh, 1.95vw);
+  /* Below the two-column breakpoint the rail stacks and grows tall, so the sky
+     is short and the unit has to be smaller or the overhead Sun runs into the
+     header. Wide layouts get the larger unit back further down. */
+  --u: min(0.85vh, 1.95vw);
   --observer-x: 22%;
   --observer-y: 84%;
   --ground: #101711;
@@ -51,7 +54,7 @@ body {
    would be a duplicate declaration. */
 @supports (height: 1dvh) {
   .stage {
-    --u: min(1.05dvh, 1.95vw);
+    --u: min(0.85dvh, 1.95vw);
   }
 }
 
@@ -232,40 +235,59 @@ body {
   height: 0;
 }
 
-/* Each packet is one wavelength band travelling the route. Its resting place
-   IS its final state, so a reduced-motion visitor and a still screenshot both
-   show the same distribution the pulse arrives at. */
+/* Each packet is one wavelength band travelling the route — a short luminous
+   trace rather than a dot, so it carries a direction as well as a colour. Its
+   resting place IS its final state, so a reduced-motion visitor and a still
+   screenshot both show the same distribution the pulse arrives at. */
 .packet {
   position: absolute;
   top: 0;
   left: calc(var(--along) * 100%);
-  width: calc(1.5 * var(--u));
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: var(--tint);
-  box-shadow: 0 0 calc(0.9 * var(--u)) var(--tint);
+  height: calc(0.52 * var(--u));
+  transform-origin: left center;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    rgb(255 255 255 / 0%) 0%,
+    var(--tint) 46%,
+    rgb(255 255 255 / 0%) 100%
+  );
+  filter: blur(calc(0.12 * var(--u)));
   translate: var(--rest-x, 0) var(--rest-y, 0);
+  rotate: var(--rest-r, 0deg);
   opacity: var(--rest-o, 0.7);
 }
 
-/* Turned aside out of the beam: it leaves the route and keeps going, because
-   scattered light is redirected, not destroyed. */
+/* Turned aside out of the beam: it leaves the route on a new heading and keeps
+   going, because scattered light is redirected, not destroyed. The trace points
+   the way it went. */
 .packet[data-scatters="true"] {
-  --rest-x: calc(var(--reach) * var(--scatter-spread, 0.65) * -2 * var(--u));
+  --rest-x: calc(var(--reach) * var(--scatter-spread, 0.65) * -1.6 * var(--u));
   --rest-y: calc(
     var(--side) * var(--reach) * var(--scatter-spread, 0.65) * 11 * var(--u)
   );
-  --rest-o: calc(0.3 + 0.65 * var(--scatter-strength, 0.6));
+
+  /* A shallow branch angle so these read as light leaving the route, not as
+     vertical slivers sitting on top of it. */
+  --rest-r: calc(var(--side) * 33deg);
+  --rest-o: calc(0.32 + 0.6 * var(--scatter-strength, 0.6));
+
+  width: calc((4 + 4.2 * var(--reach)) * var(--u));
+  height: calc(0.46 * var(--u));
 }
 
-/* Carries on to the eye. Its brightness is this band's own survival, so the
-   warm end stays strong while the short end thins out. */
+/* Carries on to the aperture. Resting positions are compressed toward the
+   arrival end, so the surviving light visibly gathers where it lands rather
+   than sitting evenly along the route. Brightness is this band's own survival,
+   so the warm end stays strong while the short end thins out. */
 .packet[data-scatters="false"] {
-  --rest-x: 0px;
+  --rest-x: calc(var(--along) * var(--path-len, 30) * var(--u) * -0.52);
   --rest-y: 0px;
-  --rest-o: calc(0.25 + 0.72 * var(--band-t, 0.6));
+  --rest-r: 0deg;
+  --rest-o: calc(0.42 + 0.58 * var(--band-t, 0.6));
 
-  width: calc(1.7 * var(--u));
+  width: calc((5 + 3 * var(--reach)) * var(--u));
+  height: calc(0.78 * var(--u));
 }
 
 /* ---- Sun -------------------------------------------------------------- */
@@ -347,80 +369,105 @@ body {
   );
 }
 
-/* An eye, so the endpoint explains itself: a lens the light lands in, and a
-   pupil that warms with whatever survived the crossing. */
+/* A collecting aperture, so the endpoint explains itself: a graduated rim, an
+   iris that takes the colour of what got through, and a core where it lands. */
 .receiver {
   position: absolute;
   top: var(--observer-y);
   left: var(--observer-x);
-  width: calc(7.6 * var(--u));
-  height: calc(4.6 * var(--u));
+  width: calc(9.2 * var(--u));
+  aspect-ratio: 1;
   translate: -50% -50%;
 }
 
-/* A pale almond so it reads as an eye at a glance, not a dark pebble. */
-.receiver-lens {
+/* A graduated ring: the machined edge of an instrument, not an iris drawn on a
+   face. The tick marks come from a repeating conic gradient, so there is no
+   asset and nothing to load. */
+.receiver-rim {
   position: absolute;
   inset: 0;
-
-  /* An eye: pointed at both ends, round in the middle. */
-  border-radius: 50% / 60%;
-  background: linear-gradient(
-    to bottom,
-    rgb(250 248 242 / 94%) 0%,
-    rgb(214 210 198 / 92%) 100%
-  );
-  box-shadow: 0 0 calc(1.6 * var(--u)) rgb(12 18 13 / 45%);
+  border-radius: 50%;
+  background:
+    /* 1.8deg, not a hairline: at this radius a sub-degree arc lands under one
+       pixel and aliases into a uniform haze instead of countable graduations. */
+    repeating-conic-gradient(
+      from 0deg,
+      rgb(246 243 236 / 62%) 0deg 1.8deg,
+      rgb(246 243 236 / 0%) 1.8deg 15deg
+    ),
+    radial-gradient(circle, rgb(12 18 13 / 0%) 58%, rgb(12 18 13 / 42%) 72%);
+  box-shadow:
+    inset 0 0 0 1px rgb(246 243 236 / 42%),
+    0 0 calc(1.4 * var(--u)) rgb(12 18 13 / 40%);
 }
 
-/* The iris darkens the centre; its warmth is whatever survived the crossing,
-   so the arriving colour is legible right at the destination. */
-.receiver-pupil {
+/* The collecting surface. Its tint is whatever survived the crossing, so the
+   arriving colour is legible right at the destination. */
+.receiver-iris {
+  position: absolute;
+  inset: 22%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 42%,
+    color-mix(
+        in srgb,
+        var(--sun-color, rgb(255 200 157)) calc(22% + 58% * var(--transmit-strength, 0.6)),
+        #0d1310
+      )
+      0%,
+    #0d1310 78%
+  );
+  box-shadow: inset 0 0 calc(1.2 * var(--u)) rgb(0 0 0 / 55%);
+}
+
+/* Where the beam actually lands. Brightness and size both answer to how much
+   light got through, and this is the element the settle pulse flares. */
+.receiver-core {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: calc(2.4 * var(--u));
+  width: calc(1.5 * var(--u));
   aspect-ratio: 1;
   translate: -50% -50%;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    #10160f 0%,
-    #10160f 38%,
-    color-mix(
-        in srgb,
-        var(--sun-color, rgb(255 200 157)) calc(35% + 65% * var(--transmit-strength, 0.6)),
-        #10160f
-      )
-      100%
+  background: color-mix(
+    in srgb,
+    var(--sun-color, rgb(255 200 157)) calc(40% + 60% * var(--transmit-strength, 0.6)),
+    white
   );
-  box-shadow: 0 0 calc(1.1 * var(--u))
+  opacity: calc(0.35 + 0.65 * var(--transmit-strength, 0.6));
+  box-shadow: 0 0 calc(2.2 * var(--u))
     color-mix(
       in srgb,
-      var(--sun-color, rgb(255 200 157)) calc(40% + 60% * var(--transmit-strength, 0.6)),
+      var(--sun-color, rgb(255 200 157)) calc(45% + 55% * var(--transmit-strength, 0.6)),
       transparent
     );
 }
 
 /* ---- in-scene labels -------------------------------------------------- */
 
-/* Each label carries a short leader line toward what it names, so it reads as
-   an annotation on a diagram rather than floating text. */
+/* Two quiet annotations with a hairline leader, rather than underlined captions.
+   Small caps and low contrast keep them subordinate to the light itself. */
 .scene-label {
   position: absolute;
   margin: 0;
-  color: rgb(255 255 255 / 78%);
-  font-size: clamp(0.6rem, 1vmin, 0.75rem);
-  letter-spacing: 0.05em;
+  color: rgb(255 255 255 / 62%);
+  font-size: clamp(0.56rem, 0.92vmin, 0.7rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   text-shadow: 0 1px 3px rgb(0 0 0 / 55%);
+  white-space: nowrap;
   pointer-events: none;
 }
 
-.scene-label span {
-  display: inline-block;
-  padding-bottom: 0.18em;
-  border-bottom: 1px solid rgb(255 255 255 / 30%);
-  white-space: nowrap;
+.scene-label::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 0.45em);
+  width: calc(2.6 * var(--u));
+  height: 1px;
+  background: linear-gradient(to left, rgb(255 255 255 / 42%), rgb(255 255 255 / 0%));
 }
 
 /* Anchored to the eye and rising with the spread, so it sits among the turned-
@@ -434,13 +481,14 @@ body {
   opacity: calc(0.24 + 0.76 * var(--scatter-strength, 0.6));
 }
 
-/* Anchored to the eye in the same unit the eye is placed in, and sitting below
-   it: the route arrives from above, so the caption stays off the light, and an
-   offset to the right can never be clipped by the left edge. */
+/* Set out to the right of the aperture, clear of its rim at every elevation —
+   the route arrives from upper right, so this keeps the caption off both the
+   light and the instrument, and an offset to the right can never be clipped by
+   the left edge. */
 .scene-label-direct {
   top: var(--observer-y);
   left: var(--observer-x);
-  translate: calc(-2.2 * var(--u)) calc(3.4 * var(--u));
+  translate: calc(6.2 * var(--u)) -50%;
 }
 
 /* ---- overlay ---------------------------------------------------------- */
@@ -458,6 +506,15 @@ body {
   padding-left: max(clamp(1rem, 3vw, 3rem), env(safe-area-inset-left));
   pointer-events: none;
   text-shadow: 0 1px 3px rgb(0 0 0 / 45%);
+}
+
+/* The awkward band: wide enough that the overhead Sun swings well right of the
+   observer, but still on the single-column rail, so the sky is short and the Sun
+   rides high. The title block has to be narrower here than at either extreme. */
+@media (width >= 44rem) and (width < 60rem) {
+  .overlay {
+    max-width: 32%;
+  }
 }
 
 .overlay nav {
@@ -502,16 +559,24 @@ body {
 .rail {
   display: grid;
   flex-shrink: 0;
+
+  /* Explicit so every child can shrink below its min-content width instead of
+     widening the grid and overflowing a narrow viewport. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.55rem clamp(1.5rem, 3vw, 3rem);
   padding: clamp(0.7rem, 1.5vh, 1.25rem) clamp(1rem, 3vw, 3rem);
   padding-bottom: max(clamp(0.7rem, 1.5vh, 1.25rem), env(safe-area-inset-bottom));
   background: var(--ground);
 }
 
+/* Wraps rather than crushing the slider: every other child is flex-shrink: 0,
+   so without this the input would be the only thing able to give — and at some
+   widths it gave almost everything, then overflowed. */
 .rail-control {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem 0.75rem;
 }
 
 .rail-control label {
@@ -522,18 +587,96 @@ body {
   text-transform: uppercase;
 }
 
+/* Still the native control — only its parts are restyled, so keyboard, touch
+   and assistive-tech behaviour are untouched. The box stays 44px for the touch
+   target while the visible track is a thin machined line. */
 .rail input[type="range"] {
-  flex: 1;
-  min-width: 0;
+  flex: 1 1 11rem;
+  min-width: 9rem; /* a slider you cannot aim at is not a control */
   max-width: 30rem;
-  height: 2.75rem; /* keeps the touch target >= 44 CSS px on the input itself */
+  height: 2.75rem;
+  margin: 0;
+  appearance: none;
+  background: transparent;
   accent-color: var(--sun-color, rgb(255 200 157));
+}
+
+.rail input[type="range"]::-webkit-slider-runnable-track {
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--sun-color, rgb(255 200 157)) 70%, transparent) 0%,
+    rgb(244 241 234 / 48%) 100%
+  );
+}
+
+.rail input[type="range"]::-moz-range-track {
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--sun-color, rgb(255 200 157)) 70%, transparent) 0%,
+    rgb(244 241 234 / 48%) 100%
+  );
+}
+
+/* border-box so the declared size includes the ring, which makes the centring
+   offset below exact instead of two pixels low. */
+.rail input[type="range"]::-webkit-slider-thumb {
+  box-sizing: border-box;
+  width: 0.95rem;
+  height: 0.95rem;
+  margin-top: calc((2px - 0.95rem) / 2);
+  appearance: none;
+  border: 2px solid #0d1310;
+  border-radius: 50%;
+  background: var(--sun-color, rgb(255 200 157));
+  box-shadow: 0 0 0 1px rgb(244 241 234 / 55%);
+}
+
+.rail input[type="range"]::-moz-range-thumb {
+  width: 0.95rem;
+  height: 0.95rem;
+  border: 2px solid #0d1310;
+  border-radius: 50%;
+  background: var(--sun-color, rgb(255 200 157));
+  box-shadow: 0 0 0 1px rgb(244 241 234 / 55%);
 }
 
 .rail input[type="range"]:focus-visible {
   outline: 3px solid #f4f1ea;
-  outline-offset: 4px;
-  border-radius: 4px;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* In forced-colors mode the custom parts are ignored anyway, and a 2px painted
+   track would be worse than nothing — hand the control back to the platform. */
+@media (forced-colors: active) {
+  .rail input[type="range"] {
+    appearance: auto;
+  }
+}
+
+/* Endpoint language belongs beside the track, but only where there is width to
+   spare: on a phone these two words would squeeze the slider down to a stub
+   that is hard to aim at, so they are dropped rather than allowed to crowd it. */
+.rail-end {
+  display: none;
+  flex-shrink: 0;
+  color: rgb(244 241 234 / 42%);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Deliberately above the two-column breakpoint (60rem): switching them on at
+   44rem meant that between 60rem and here the rail had halved its column width
+   while still carrying both endpoint words, squeezing the track to a stub. */
+@media (width >= 78rem) {
+  .rail-end {
+    display: inline;
+  }
 }
 
 .rail-value {
@@ -564,6 +707,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+  min-width: 0;
   margin: 0;
 }
 
@@ -574,20 +718,31 @@ body {
   text-transform: uppercase;
 }
 
-.arrival-bands {
+/* One ribbon, not six bars: the bands sit flush so the eye reads a continuous
+   spectrum whose profile is the transmission curve. Hairline separators keep
+   each band countable without turning it into a chart. */
+.arrival-ribbon {
   display: flex;
   align-items: flex-end;
-  gap: calc(0.28 * var(--u));
-  height: calc(4.6 * var(--u));
-  min-height: 1.6rem;
-  padding: 0 0 calc(0.2 * var(--u));
-  border-bottom: 1px solid rgb(244 241 234 / 22%);
+  height: calc(5.4 * var(--u));
+  min-height: 1.9rem;
+  border-bottom: 1px solid rgb(244 241 234 / 34%);
 }
 
 .arrival-band {
   position: relative;
   flex: 1;
   height: 100%;
+}
+
+.arrival-band + .arrival-band .arrival-band-fill::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  background: rgb(12 18 13 / 45%);
 }
 
 .arrival-band-fill {
@@ -597,23 +752,69 @@ body {
   left: 0;
   height: 100%;
   transform-origin: bottom center;
-  border-radius: 2px 2px 0 0;
-  background: var(--tint);
-  opacity: 0.9;
+  background: linear-gradient(
+    to top,
+    var(--tint) 0%,
+    color-mix(in srgb, var(--tint) 55%, transparent) 100%
+  );
   scale: 1 var(--band-t, 0.6);
 }
 
+/* Wraps rather than widening its column: on a narrow screen the two end labels
+   stack instead of forcing the rail past the viewport. */
 .arrival-scale {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.1rem 0.75rem;
+  min-width: 0;
   color: rgb(244 241 234 / 52%);
-  font-size: 0.66rem;
+  font-size: 0.62rem;
 }
 
 @media (width >= 60rem) {
+  /* Wide viewports have room to move the whole instrument toward the middle,
+     which pulls the light path out of the corner. Narrow ones cannot: the low
+     Sun's horizontal reach would run past the right edge. */
+  .stage {
+    --observer-x: 31%;
+
+    /* The rail is two columns here, so the sky is tall enough to carry the
+       larger unit and let the light path fill the frame. */
+    --u: min(1.05dvh, 1.95vw);
+  }
+
+  /* The sky's right-hand field was dead space; the arrival spectrum belongs
+     there, reading as an instrument etched on the air beside the beam it
+     measures. It stays a rail child in the DOM so its band names remain in the
+     accessibility tree, outside the role="img" region. The scrim is a soft
+     radial wash with no edges — deliberately not a card. */
+  .arrival {
+    position: absolute;
+    top: 12%;
+    right: clamp(2rem, 4vw, 5rem);
+    z-index: 2;
+    width: min(24rem, 25vw);
+
+    /* No panel, no edge: the text carries its own contrast so the reading sits
+       on the sky rather than in a card floating above it. */
+    text-shadow: 0 1px 4px rgb(8 12 9 / 85%);
+  }
+
+  /* A hairline running back toward the beam, so the reading is visibly tied to
+     the light it came from. */
+  .arrival::before {
+    content: "";
+    position: absolute;
+    top: 2.1rem;
+    right: 100%;
+    width: clamp(2rem, 7vw, 7rem);
+    height: 1px;
+    background: linear-gradient(to left, rgb(244 241 234 / 40%), rgb(244 241 234 / 0%));
+  }
+
   .rail {
-    grid-template-columns: minmax(0, 1.15fr) minmax(11rem, 0.55fr) minmax(0, 1.3fr);
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.35fr);
     align-items: center;
   }
 
@@ -640,7 +841,8 @@ body {
   .haze,
   .air-shell,
   .packet,
-  .receiver-pupil {
+  .receiver-iris,
+  .receiver-core {
     transition:
       opacity 0.2s ease-out,
       translate 0.2s ease-out,
@@ -678,9 +880,17 @@ body {
     animation-delay: calc(var(--delay) * 150ms);
   }
 
+  /* The ending: light lands, the aperture answers, then the reading settles.
+     Both finish on their resting declarations, so a cancelled pulse leaves
+     nothing displaced. */
+  .stage.is-pulsing .receiver-core {
+    animation: core-receive 620ms ease-out both;
+    animation-delay: 260ms;
+  }
+
   .stage.is-pulsing .arrival-band-fill {
     animation: band-settle 620ms ease-out both;
-    animation-delay: calc(220ms + var(--i) * 26ms);
+    animation-delay: calc(300ms + var(--i) * 26ms);
   }
 
   @keyframes path-emphasis {
@@ -708,6 +918,23 @@ body {
     100% {
       translate: var(--rest-x, 0) var(--rest-y, 0);
       opacity: var(--rest-o, 0.7);
+    }
+  }
+
+  @keyframes core-receive {
+    0% {
+      scale: 1;
+      opacity: calc(0.35 + 0.65 * var(--transmit-strength, 0.6));
+    }
+
+    38% {
+      scale: 1.85;
+      opacity: 1;
+    }
+
+    100% {
+      scale: 1;
+      opacity: calc(0.35 + 0.65 * var(--transmit-strength, 0.6));
     }
   }
 

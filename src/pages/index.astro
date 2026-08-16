@@ -34,7 +34,7 @@ const AIR_BANDS = [0, 1, 2, 3];
       class="atmosphere"
       data-testid="atmosphere"
       role="img"
-      aria-label="A diagram of sunlight travelling to an eye on the ground. Lowering the Sun flattens the route so it crosses more shells of air; short-wavelength packets are turned aside out of the beam and spread across the sky, and the packets still arriving are the longer, warmer ones. Raising the Sun shortens and steepens the route, so less is turned aside and the arriving light stays pale. The spectrum beside the control shows what reached the eye, and the written explanation describes the current setting."
+      aria-label="A diagram of sunlight travelling to a collecting aperture on the ground. Lowering the Sun flattens the route so it crosses more shells of air; short-wavelength packets are turned aside out of the beam and spread across the sky, and the packets still arriving are the longer, warmer ones. Raising the Sun shortens and steepens the route, so less is turned aside and the arriving light stays pale. A spectrum labelled what reached the aperture reads out band by band, and the written explanation describes the current setting."
     >
       <!-- Shells of air. The shallow route crosses more of them, which is what
            makes the longer low-Sun path legible rather than merely stated. -->
@@ -91,21 +91,20 @@ const AIR_BANDS = [0, 1, 2, 3];
 
       <div class="horizon"></div>
 
-      <!-- The receiver: an eye, so the endpoint explains itself. -->
+      <!-- The receiver: a graduated aperture, so the destination reads as an
+           instrument collecting light rather than a face looking at it. The
+           core brightens with whatever survived the crossing. -->
       <div class="receiver">
-        <span class="receiver-lens"></span>
-        <span class="receiver-pupil"></span>
+        <span class="receiver-rim"></span>
+        <span class="receiver-iris"></span>
+        <span class="receiver-core"></span>
       </div>
 
-      <!-- Both labels live in atmosphere space, anchored to the eye. Keeping
-           them out of the rotated beam frame means no counter-rotation, and so
-           no chance of the box swinging off-screen at steep angles. -->
-      <p class="scene-label scene-label-scatter">
-        <span>blue light turned aside</span>
-      </p>
-      <p class="scene-label scene-label-direct">
-        <span>what reaches your eye</span>
-      </p>
+      <!-- Two labels, both in atmosphere space and anchored to the receiver.
+           Keeping them out of the rotated beam frame means no counter-rotation,
+           and so no chance of the box swinging off-screen at steep angles. -->
+      <p class="scene-label scene-label-scatter">blue redirected</p>
+      <p class="scene-label scene-label-direct">received</p>
     </div>
 
     <header class="overlay">
@@ -121,6 +120,7 @@ const AIR_BANDS = [0, 1, 2, 3];
     <div class="rail" data-testid="rail">
       <div class="rail-control">
         <label for="elevation">Sun elevation</label>
+        <span class="rail-end" aria-hidden="true">horizon</span>
         <input
           type="range"
           id="elevation"
@@ -130,14 +130,19 @@ const AIR_BANDS = [0, 1, 2, 3];
           step="1"
           value={INITIAL_ELEVATION}
         />
+        <span class="rail-end" aria-hidden="true">overhead</span>
         <span class="rail-value" data-testid="value-readout" aria-hidden="true">
           {Math.round(scene.elevationDeg)}°
         </span>
       </div>
 
+      <!-- Deliberately a sibling of the atmosphere, not a child: on desktop it
+           is positioned into the sky's empty right-hand field, but staying
+           outside the role="img" region keeps every band name readable by
+           assistive technology. -->
       <figure class="arrival" data-testid="arrival-spectrum">
-        <figcaption class="arrival-caption">What reached your eye</figcaption>
-        <div class="arrival-bands">
+        <figcaption class="arrival-caption">What reached the aperture</figcaption>
+        <div class="arrival-ribbon">
           {
             SPECTRUM_BANDS.map((band, i) => (
               <span
@@ -153,7 +158,7 @@ const AIR_BANDS = [0, 1, 2, 3];
           }
         </div>
         <div class="arrival-scale">
-          <span>blue — scattered away</span>
+          <span>blue — redirected</span>
           <span>red — gets through</span>
         </div>
       </figure>

@@ -27,10 +27,131 @@ export interface SunScene {
   readonly transmitStrength: number;
   /** How warm that surviving direct light looks, 0-1. */
   readonly transmitWarmth: number;
+  /** Relative amount of air on the route: 1 overhead, larger near the horizon. */
+  readonly pathAmount: number;
+  /** How much of each channel survives the crossing. */
+  readonly transmission: SpectralTransmission;
   readonly skyColor: string;
   readonly sunColor: string;
   readonly explanation: string;
 }
+
+/** How much of each channel survives the trip, 0-1. */
+export interface SpectralTransmission {
+  readonly red: number;
+  readonly green: number;
+  readonly blue: number;
+}
+
+export interface SpectrumBand {
+  /** A word for the band, so the spectrum reads without relying on colour. */
+  readonly label: string;
+  /** Wavelength relative to the long end, which is 1. Short bands are < 1. */
+  readonly relativeWavelength: number;
+  readonly tint: string;
+  /** Whether this band is the kind that gets turned aside out of the beam. */
+  readonly scatters: boolean;
+}
+
+// Short wavelengths first. The relative figures are ratios, not measurements:
+// they only have to be ordered and spaced plausibly for the 1/wavelength^4
+// relationship below to produce the right *ranking* of survival.
+export const SPECTRUM_BANDS: readonly SpectrumBand[] = [
+  { label: "violet", relativeWavelength: 0.66, tint: "rgb(150 142 255)", scatters: true },
+  { label: "blue", relativeWavelength: 0.72, tint: "rgb(108 170 255)", scatters: true },
+  { label: "cyan", relativeWavelength: 0.79, tint: "rgb(120 214 236)", scatters: true },
+  { label: "green", relativeWavelength: 0.86, tint: "rgb(158 226 158)", scatters: false },
+  { label: "amber", relativeWavelength: 0.93, tint: "rgb(255 201 122)", scatters: false },
+  { label: "red", relativeWavelength: 1, tint: "rgb(255 132 108)", scatters: false },
+];
+
+// Rayleigh scattering removes short wavelengths from a beam far more readily
+// than long ones — the classic 1/wavelength^4 dependence. Feed that into
+// Beer-Lambert (survival = e^-(strength x path)) and both facts we need fall
+// out of one expression: every band dims as the path grows, and the short
+// bands dim fastest, so the surviving beam skews warm.
+//
+// The constant sets how thick the illustrated air is. It is chosen for
+// legibility on screen, not measured from the sky, and no number from this
+// model is ever shown to the visitor.
+const RAYLEIGH_STRENGTH = 0.075;
+
+/**
+ * Relative amount of air on the route: 1 straight up, rising as the Sun drops.
+ *
+ * Real air mass goes as 1/sin(elevation), which diverges at the horizon. Rather
+ * than clamp that — a clamp would freeze the model across the last few degrees,
+ * exactly where the interesting states are — the sine is remapped into
+ * [HORIZON_FLOOR, 1]. That stays bounded and stays *strictly* monotonic, so
+ * every one-degree nudge still changes the answer right down to 0°.
+ */
+const HORIZON_FLOOR = 0.14;
+
+export function pathAmount(elevationDeg: number): number {
+  const clamped = Math.min(MAX_ELEVATION, Math.max(MIN_ELEVATION, elevationDeg));
+  const sin = Math.sin((clamped * Math.PI) / 180);
+  return 1 / (sin * (1 - HORIZON_FLOOR) + HORIZON_FLOOR);
+}
+
+function survives(relativeWavelength: number, air: number): number {
+  return Math.exp((-RAYLEIGH_STRENGTH * air) / relativeWavelength ** 4);
+}
+
+/** Per-band survival, in the same order as `SPECTRUM_BANDS`. */
+export function bandTransmissions(elevationDeg: number): readonly number[] {
+  const air = pathAmount(elevationDeg);
+  return SPECTRUM_BANDS.map((band) => survives(band.relativeWavelength, air));
+}
+
+function bandNamed(label: string): SpectrumBand {
+  const band = SPECTRUM_BANDS.find((b) => b.label === label);
+  if (!band) throw new Error(`no "${label}" band in SPECTRUM_BANDS`);
+  return band;
+}
+
+/**
+ * The same model reduced to three channels, for colour and for testing.
+ *
+ * Reads its wavelengths out of `SPECTRUM_BANDS` rather than repeating them, so
+ * retuning the band table can never leave the three channels describing a
+ * different atmosphere from the bars the visitor is looking at.
+ */
+export function spectralTransmission(elevationDeg: number): SpectralTransmission {
+  const air = pathAmount(elevationDeg);
+  return {
+    red: survives(bandNamed("red").relativeWavelength, air),
+    green: survives(bandNamed("green").relativeWavelength, air),
+    blue: survives(bandNamed("blue").relativeWavelength, air),
+  };
+}
+
+export interface Packet {
+  /** Where along the lit traverse this packet sits, 0-1. */
+  readonly along: number;
+  /** Index into `SPECTRUM_BANDS`. */
+  readonly band: number;
+  /** Which way it is turned aside, if it is the scattering kind: -1 or 1. */
+  readonly side: number;
+  /** How far it travels once turned aside, 0-1. */
+  readonly reach: number;
+  /** Stagger within the explanatory pulse, 0-1. */
+  readonly delay: number;
+}
+
+// A fixed cast again, alternating short and long bands along the route so both
+// outcomes — turned aside, or carrying on — are visible at once. Positions,
+// bands and stagger all come from the index, so every build ships the same
+// field and a screenshot is reproducible.
+export const PACKETS: readonly Packet[] = Array.from({ length: 14 }, (_unused, i): Packet => {
+  const bandOrder = [0, 5, 1, 4, 2, 3, 1, 5];
+  return {
+    along: (i + 0.5) / 14,
+    band: bandOrder[i % bandOrder.length],
+    side: i % 2 === 0 ? -1 : 1,
+    reach: 0.42 + (((i * 29) % 13) / 12) * 0.58,
+    delay: (i % 7) / 7,
+  };
+});
 
 export interface ScatterMark {
   /** Position along the lit traverse, 0-1. */
@@ -134,6 +255,8 @@ export function deriveScene(elevationDeg: number): SunScene {
     scatterSpread,
     transmitStrength,
     transmitWarmth: warmth,
+    pathAmount: pathAmount(clamped),
+    transmission: spectralTransmission(clamped),
     skyColor,
     sunColor,
     explanation: explain(clamped, t),
@@ -154,6 +277,10 @@ function explain(elevationDeg: number, t: number): string {
 const round = (n: number): string => n.toFixed(3);
 
 export function sceneStyle(scene: SunScene): string {
+  const bands = bandTransmissions(scene.elevationDeg)
+    .map((value, i) => `--band-${i}:${round(value)};`)
+    .join("");
+
   return (
     `--beam-angle:${round(scene.beamAngleDeg)}deg;` +
     `--beam-len:${round(scene.beamLength)};` +
@@ -162,24 +289,80 @@ export function sceneStyle(scene: SunScene): string {
     `--scatter-spread:${round(scene.scatterSpread)};` +
     `--transmit-strength:${round(scene.transmitStrength)};` +
     `--transmit-warmth:${round(scene.transmitWarmth)};` +
+    `--t-red:${round(scene.transmission.red)};` +
+    `--t-green:${round(scene.transmission.green)};` +
+    `--t-blue:${round(scene.transmission.blue)};` +
+    bands +
     `--sun-color:${scene.sunColor};` +
     `--sky-color:${scene.skyColor};`
   );
 }
 
+/** How long the explanatory pulse runs, in milliseconds. */
+const PULSE_MS = 620;
+/** Quiet needed after the last input before the pulse is worth playing. */
+const SETTLE_MS = 130;
+
 function init(): void {
   const range = document.querySelector<HTMLInputElement>("#elevation");
   const scene = document.querySelector<HTMLElement>('[data-testid="scene"]');
   const explanation = document.querySelector<HTMLOutputElement>("#explanation");
+  const readout = document.querySelector<HTMLElement>('[data-testid="value-readout"]');
   if (!range || !scene || !explanation) return;
 
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let settleTimer = 0;
+  let pulseFrame = 0;
+
+  // Scrubbing updates state and nothing else: geometry and colour follow the
+  // slider with no queued animation in the way.
   const render = (): void => {
     const next = deriveScene(range.valueAsNumber);
     scene.setAttribute("style", sceneStyle(next));
     explanation.textContent = next.explanation;
+    if (readout) readout.textContent = `${Math.round(next.elevationDeg)}°`;
   };
 
-  range.addEventListener("input", render);
+  const stopPulse = (): void => {
+    window.clearTimeout(settleTimer);
+    window.cancelAnimationFrame(pulseFrame);
+    scene.classList.remove("is-pulsing");
+  };
+
+  // One pulse, and a new input retargets it: the class comes off, pending
+  // frames are dropped, and it goes back on next frame so the animation
+  // restarts from the current state instead of queueing behind the old one.
+  const pulse = (): void => {
+    if (reduceMotion.matches || document.hidden) return;
+    stopPulse();
+    pulseFrame = window.requestAnimationFrame(() => {
+      pulseFrame = window.requestAnimationFrame(() => {
+        scene.classList.add("is-pulsing");
+        settleTimer = window.setTimeout(() => {
+          scene.classList.remove("is-pulsing");
+        }, PULSE_MS + 120);
+      });
+    });
+  };
+
+  range.addEventListener("input", () => {
+    render();
+    stopPulse();
+    settleTimer = window.setTimeout(pulse, SETTLE_MS);
+  });
+
+  // Drag end / key release: explain straight away rather than waiting out the
+  // settle window.
+  range.addEventListener("change", () => {
+    render();
+    pulse();
+  });
+
+  // Nothing should keep animating for a tab nobody is looking at.
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stopPulse();
+  });
+
   render();
 }
 

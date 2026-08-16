@@ -4,6 +4,8 @@ import {
   deriveScene,
   sceneStyle,
   SCATTER_MARKS,
+  SPECTRUM_BANDS,
+  PACKETS,
   INITIAL_ELEVATION,
   MIN_ELEVATION,
   MAX_ELEVATION,
@@ -11,6 +13,7 @@ import {
 
 const scene = deriveScene(INITIAL_ELEVATION);
 const sceneStyleAttr = sceneStyle(scene);
+const AIR_BANDS = [0, 1, 2, 3];
 ---
 
 <Layout title="The Sun Never Turned Red">
@@ -31,16 +34,23 @@ const sceneStyleAttr = sceneStyle(scene);
       class="atmosphere"
       data-testid="atmosphere"
       role="img"
-      aria-label="A diagram of sunlight travelling to a marked observation point on the ground. Lowering the Sun lengthens and flattens the route, so more blue light is turned aside out of it and spreads across the sky, and the light still arriving is warmer and dimmer. Raising the Sun shortens and steepens the route, so less blue is turned aside and the arriving light stays pale. The written explanation below the control describes the current setting."
+      aria-label="A diagram of sunlight travelling to an eye on the ground. Lowering the Sun flattens the route so it crosses more shells of air; short-wavelength packets are turned aside out of the beam and spread across the sky, and the packets still arriving are the longer, warmer ones. Raising the Sun shortens and steepens the route, so less is turned aside and the arriving light stays pale. The spectrum beside the control shows what reached the eye, and the written explanation describes the current setting."
     >
+      <!-- Shells of air. The shallow route crosses more of them, which is what
+           makes the longer low-Sun path legible rather than merely stated. -->
+      <div class="air-shells" aria-hidden="true">
+        {AIR_BANDS.map((i) => <span class="air-shell" style={`--shell:${i};`} />)}
+      </div>
+
       <div class="haze"></div>
 
-      <!-- Everything geometric hangs off the observer and is rotated by the
-           one derived beam angle, so the route, the lit traverse, the
-           scattering and the Sun can never drift out of alignment. -->
+      <!-- Everything geometric hangs off the observer and is rotated by the one
+           derived beam angle, so the route, the crossing, the packets and the
+           Sun can never drift out of alignment. -->
       <div class="beam-anchor">
         <div class="beam-frame">
-          <div class="beam" data-testid="direct-beam"></div>
+          <div class="beam-soft" data-testid="direct-beam"></div>
+          <div class="beam-core"></div>
 
           <div class="atmos-path" data-testid="atmospheric-path">
             <div class="scattering" data-testid="scattering-layer">
@@ -53,7 +63,22 @@ const sceneStyleAttr = sceneStyle(scene);
                   />
                 ))
               }
-              <span class="scene-label scene-label-scatter">scattered blue light</span>
+            </div>
+
+            <!-- The packets are the hero: short-wavelength ones peel out of the
+                 beam, long-wavelength ones carry on to the eye. -->
+            <div class="packets">
+              {
+                PACKETS.map((packet, i) => (
+                  <span
+                    class="packet"
+                    data-testid="packet"
+                    data-scatters={String(SPECTRUM_BANDS[packet.band].scatters)}
+                    data-band={SPECTRUM_BANDS[packet.band].label}
+                    style={`--along:${packet.along.toFixed(4)};--side:${packet.side};--reach:${packet.reach.toFixed(3)};--delay:${packet.delay.toFixed(3)};--tint:${SPECTRUM_BANDS[packet.band].tint};--band-t:var(--band-${packet.band});--i:${i};`}
+                  />
+                ))
+              }
             </div>
           </div>
 
@@ -66,11 +91,21 @@ const sceneStyleAttr = sceneStyle(scene);
 
       <div class="horizon"></div>
 
-      <div class="observer">
-        <span class="observer-ring"></span>
+      <!-- The receiver: an eye, so the endpoint explains itself. -->
+      <div class="receiver">
+        <span class="receiver-lens"></span>
+        <span class="receiver-pupil"></span>
       </div>
 
-      <p class="scene-label scene-label-direct">light reaching you</p>
+      <!-- Both labels live in atmosphere space, anchored to the eye. Keeping
+           them out of the rotated beam frame means no counter-rotation, and so
+           no chance of the box swinging off-screen at steep angles. -->
+      <p class="scene-label scene-label-scatter">
+        <span>blue light turned aside</span>
+      </p>
+      <p class="scene-label scene-label-direct">
+        <span>what reaches your eye</span>
+      </p>
     </div>
 
     <header class="overlay">
@@ -95,10 +130,38 @@ const sceneStyleAttr = sceneStyle(scene);
           step="1"
           value={INITIAL_ELEVATION}
         />
+        <span class="rail-value" data-testid="value-readout" aria-hidden="true">
+          {Math.round(scene.elevationDeg)}°
+        </span>
       </div>
+
+      <figure class="arrival" data-testid="arrival-spectrum">
+        <figcaption class="arrival-caption">What reached your eye</figcaption>
+        <div class="arrival-bands">
+          {
+            SPECTRUM_BANDS.map((band, i) => (
+              <span
+                class="arrival-band"
+                data-testid="spectrum-band"
+                data-band={band.label}
+                style={`--i:${i};--tint:${band.tint};--band-t:var(--band-${i});`}
+              >
+                <span class="arrival-band-fill"></span>
+                <span class="visually-hidden">{band.label}</span>
+              </span>
+            ))
+          }
+        </div>
+        <div class="arrival-scale">
+          <span>blue — scattered away</span>
+          <span>red — gets through</span>
+        </div>
+      </figure>
+
       <output class="rail-output" for="elevation" id="explanation" aria-live="off"
         >{scene.explanation}</output
       >
+
       <p class="rail-note" data-testid="model-note">
         Simplified illustration — not a physical simulation.
       </p>

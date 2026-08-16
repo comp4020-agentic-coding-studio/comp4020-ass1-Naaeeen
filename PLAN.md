@@ -4,101 +4,344 @@
 
 Lowering the Sun increases the atmospheric path length, which removes more
 short-wavelength light from the direct beam, which changes what the visitor
-sees and how it's explained — one physical cause, one visible effect.
+sees and how it's explained — one physical cause, one visible effect. The
+Sun itself never changes colour.
 
 ## Core interaction
 
 The visitor drags, touches, or keys one control (a native range input) to
-set the Sun's elevation. Pointer drag, touch drag, and keyboard arrows are
-equivalent ways of operating the same control — none is a second mechanic.
+set the Sun's elevation, 0–90°. Pointer drag, touch drag, and keyboard
+arrows are equivalent ways of operating the same control — none is a second
+mechanic.
 
 ## Canonical state
 
-One number, Sun elevation (0–1), is the only source of truth. It drives, in
+One number, Sun elevation, is the only source of truth. It drives, in
 lockstep, from that single value:
 
-- the rendered scene (Sun position, sky)
-- the atmospheric path-length representation
-- the arriving-light spectrum shown to the visitor
+- the Sun's position in the scene
+- the atmospheric-path geometry
+- scattering strength
+- transmitted-light warmth
+- sky appearance
+- the displayed current value
 - the explanation text
+- the near-horizon reveal state
 
-No output updates independently of that one state.
+No output holds independent state. No randomised particle counts or
+per-frame jitter that would make verification unstable — anything visual
+that varies must be a deterministic function of elevation.
 
 ## Scientific scope and limitations
 
 Models Rayleigh scattering at a level appropriate for a one-page explainer:
-lower elevation → longer path length → more short-wavelength light
-scattered out of the direct beam → redder/dimmer direct light. This is a
-single-variable illustrative model (elevation → path length → spectrum),
-not a radiative-transfer simulation — it does not model aerosols,
-pollution, humidity, cloud, or real geographic/atmospheric data. The
-explanation text must not claim more precision than the model has.
+lower elevation → longer path → more short-wavelength light scattered out
+of the direct beam → warmer remaining direct light. This is a
+single-variable illustrative model, not a radiative-transfer simulation —
+no aerosols, pollution, humidity, cloud, or real atmospheric data. No exact
+wavelengths, percentages, or air-mass values. The visualisation is a
+stylised diagram of a real mechanism, and says so on the page — that note is
+part of the required rail inventory below, not optional dressing.
+High-fidelity stylised realism is the visual target; photorealistic
+simulation is not a claim the work may make.
+
+One wording trap: the composition may use haze or depth layers as *visual*
+atmosphere, but the copy must not explain them as aerosol or pollution
+effects — aerosols are outside this model. Unlabelled visual depth is fine;
+attributing the phenomenon to particles the model doesn't have is not.
 
 ## Fixed non-goals (this cycle)
 
 - No camera, microphone, notifications, or device-orientation access.
 - No geolocation (deferred, not attempted).
 - No backend, accounts, analytics, persistence, or cookies.
-- No server-side data flow of any kind.
 - No second interactive mechanic — every feature answers to the one
-  canonical elevation state above, or it doesn't ship.
+  canonical elevation state, or it doesn't ship.
+- No scores, lives, levels, or timers.
+- No second page.
+- No remote assets or remote fonts.
+- No new animation dependency.
+- No Canvas, WebGL, or Three.js in the next implementation slice. If one
+  later looks genuinely necessary, it requires its own architecture
+  decision first — not an incidental addition mid-slice.
 - The core lesson works completely with zero permissions granted.
 
-## Optional-coda decision gate
+## Visual direction — production contract
 
-A footprint/reveal coda (a bounded, in-memory `sunPath` trace of the
-session) is deferred to a late decision gate, judged only once the core
-above is built and verified in a browser. Build it if, and only if, it
-still serves the one thesis above. If built: in-memory only, cleared on
-refresh or an explicit reset, no persistence/upload/transmission, and
-derived summaries (duration, range, direction) computed from the samples
-at reveal time, not stored as separate fields. If it doesn't clearly serve
-the thesis, it's recorded as deliberately discarded, not shipped.
+The functional baseline (checkpoint 4) is accepted and its colour model is
+settled. What follows governs the visual work from checkpoint 6 onward.
+
+### What the browser audit rejected — now durable requirements
+
+The 1920×1080 audit found the illustration was ~640×226 floating in large
+unused white space; the composition read as a starter form containing a
+demo; the default-looking slider dominated more than the phenomenon; and
+the phone version, while functional, felt like an ordinary form page. Those
+four characteristics are now standing failures, not one-off notes:
+
+- A small framed illustration inside a mostly-empty page is a failure.
+- A centred card, dashboard, or settings-page composition is a failure.
+- A control that visually outweighs the phenomenon is a failure.
+- A phone layout that reads as a form is a failure.
+- Generic glassmorphism, decorative blobs, and arbitrary translucent panels
+  are failures.
+
+"Apple-level" here means restraint, precision, hierarchy, and
+responsiveness. It does not mean imitating Apple branding, copying an Apple
+page, or adding translucent chrome for its own sake.
+
+### Naming, so the measurements below are unambiguous
+
+- **the stage** — the complete viewport-scale experience, carrying
+  `data-testid="scene"`. The stage fills the viewport; it is the whole
+  composition, rail included.
+- **the atmosphere field** — the main illustrated sky/atmosphere area
+  *inside* the stage, carrying `data-testid="atmosphere"`. This is the part
+  that must occupy most of the stage, and it is what the 70% / 55%
+  thresholds below refer to.
+- **the path** — the rendered element representing the beam's atmospheric
+  traverse. Its measured length is what the 1.5× requirement refers to.
+- **the rail** — the bottom instrument group holding the control, value,
+  explanation, and the stylised-illustration note.
+
+Every threshold below is measured on the named element's
+`getBoundingClientRect()`, and nothing else. `data-testid="atmosphere"` is
+an acceptance hook for checkpoint 6 — it does not exist yet and is not added
+in this checkpoint.
+
+### Experience flow
+
+1. The experience opens directly into a full-screen atmospheric scene.
+2. The visitor immediately sees one instruction:
+   `Move the Sun toward the horizon.`
+3. The visitor operates the single elevation control.
+4. The Sun, atmospheric path, scattering marks, transmitted light, sky, and
+   explanation respond together.
+5. At or below 8° elevation, the same mechanic produces the reveal:
+   `The Sun didn't turn red. The atmosphere changed what reached you.`
+
+The reveal is an outcome of the existing mechanic — a state the one control
+reaches at or below 8° — not a second mechanic, a new screen, or a separate
+trigger. 8° is the checkable threshold; it is a legibility choice, not a
+physical claim about a specific angle.
+
+### Visual composition
+
+One unified scene, containing:
+
+- a full-bleed layered sky
+- a carefully rendered solar disc with restrained bloom
+- atmospheric depth or haze layers
+- a low horizon or landscape silhouette
+- a small observer position
+- the direct Sun-to-observer beam
+- a visibly highlighted atmospheric path along that beam
+- deterministic blue scattering particles or strokes leaving that path
+- warmer transmitted light continuing toward the observer
+- a restrained bottom rail holding the accessible range control, the current
+  value, the concise explanation, and the stylised-illustration note (that
+  note is required — it may be quiet, but it may not be dropped)
+- subtle texture or grain only where it adds depth and does not introduce
+  continuous animation or a full-screen filter
+
+The stage dominates the viewport. Title and instruction stay visually
+secondary to the scene.
+
+The items above are a required inventory: each must be present and
+identifiable in the rendered page. Everything in "What the browser audit
+rejected" is *direction* — judged by a person at review, not measured.
+
+### Motion contract
+
+- Motion is user-driven and causal, not decorative autoplay.
+- Response is immediate while dragging — the scene tracks the control
+  rather than replaying a canned sequence.
+- Transitions are short and interruptible; a new input retargets from the
+  current position instead of queueing.
+- Use `transform` and `opacity` for continuous motion where practical.
+  MDN's animation-performance guidance is explicit that staying off
+  reflow/repaint is what makes compositor offloading possible, and names
+  `transform` as the primary such property.
+- No `transition: all`.
+- No continuous animation of layout properties.
+- No per-frame DOM reconstruction.
+- No *looping or autonomous* full-screen blur/filter animation. A
+  state-driven filter or gradient that settles to a new value when the
+  control moves is allowed — that's the mechanic, not decoration. What's
+  banned is a filter that animates on its own clock, and any keyframed
+  full-screen filter loop. Prefer `transform`/`opacity` for anything that
+  moves continuously during a drag.
+- Under `prefers-reduced-motion`, ambient effects stop *animating* but stay
+  *rendered*: nothing that carries state may disappear. Reduced motion
+  replaces motion, it never removes information. MDN's reduced-motion
+  reference sanctions substitution explicitly, and warns that scaling or
+  panning large objects is a vestibular trigger — so the reduced path
+  conveys state through position, geometry, colour, and text, arriving at
+  the same end state without the travel.
+- The low and high states must both remain understandable in a still
+  screenshot with no motion at all.
+
+### Accessibility and input
+
+- The native labelled range input stays the semantic control.
+- Pointer, touch, and keyboard operate the same one state.
+- A visible, high-contrast focus indicator.
+- The range input's own bounding box is at least 44 CSS pixels on its
+  cross-axis (height, for a horizontal slider) — measured on the `<input>`
+  itself, not on a padded ancestor, so the touch target is real.
+- Colour is never the only carrier of the explanation — geometry,
+  scattering marks, and text must also differ between states.
+- No `aria-live` region announcing on every input event during a continuous
+  drag.
+- The reveal must still reach a screen-reader user. Since the explanation
+  region is not a live region during dragging, the reveal state must be
+  exposed some non-visual way that fires on settle rather than per tick —
+  e.g. announcing once on `change` (drag end / key release) rather than on
+  `input`, or reflecting the state on the control's accessible description.
+  Whichever way it's done, it must not chatter during a drag, and the reveal
+  must not be visual-only.
+
+### Desktop acceptance — 1920×1080
+
+Measured (pass/fail):
+
+- The stage's width is at least 98% of `window.innerWidth`.
+- The stage's height is at least 98% of `window.innerHeight`.
+- The atmosphere field occupies at least 70% of the stage's height.
+- The stage is not constrained by a small fixed `max-width` — no centred
+  fixed-width box.
+- The rail is fully within the viewport, reachable without scrolling.
+- No overflow: `document.documentElement.scrollWidth <= window.innerWidth + 1`
+  and `document.documentElement.scrollHeight <= window.innerHeight + 2`.
+- The Sun, beam, and observer bounding boxes do not intersect any text or
+  rail bounding box.
+
+Judged at review: that it reads as a full-screen scene rather than a page
+containing a widget, and that title and instruction sit below the scene in
+visual hierarchy.
+
+### Phone acceptance — 390×844
+
+Measured (pass/fail):
+
+- The stage's width is at least 98% of `window.innerWidth`.
+- The stage's height is at least 98% of `window.innerHeight`.
+- The atmosphere field occupies at least 55% of the stage's height.
+- The rail, control, instruction, and explanation are all usable with no
+  scrolling required.
+- No overflow: `document.documentElement.scrollWidth <= window.innerWidth + 1`
+  and `document.documentElement.scrollHeight <= window.innerHeight + 2`.
+- The control's bounding box clears the bottom safe-area inset.
+- At 0°, 45°, and 90°: no text or rail box intersects the Sun, beam, or
+  observer box. Overlap *between* atmospheric layers is by design and is not
+  a collision.
+- Layout survives mobile browser-chrome resize — use `dvh`/`svh` and
+  `env(safe-area-inset-*)`, not naive `100vh` alone.
+
+Judged at review: that the phone composition reads as deliberate rather than
+as a form, and that the title stays compact.
+
+Both overflow checks are evaluated at the normal marking zoom level (100%).
+Do not reach for a global `overflow: hidden` to make them pass — that hides
+a broken layout instead of fixing it, and it would also mask real overflow
+from a marker.
+
+### State comparison acceptance
+
+In the production build, comparing 10° and 80° must visibly show:
+
+- Sun vertical displacement of at least 30% of the stage's height
+- the path's rendered length at 10° is at least 1.5× its length at 80° —
+  binding, not aspirational, measured on the path element
+- stronger or more extensive blue scattering at 10° (more marks, or the same
+  marks at higher opacity — either counts, as long as it's visible and
+  deterministic)
+- warmer transmitted light at 10°
+- a pale warm / near-white Sun at 80°
+- different human-readable explanation text
+- no green-dominant Sun or sky at any elevation (already covered by
+  `spec/sun-colour.test.ts`)
+- every one of those outcomes derived from the same elevation state
+
+The 1.5× figure is a legibility floor — enough that the difference is
+unmistakable on screen. It is deliberately far below the real air-mass ratio
+and is not offered as a physical quantity.
+
+### What automated tests can and cannot settle
+
+jsdom cannot judge visual quality, layout, or animation. Pure derivation
+maths and semantic DOM structure belong in automated tests; composition,
+motion, and perceived quality require production-browser evidence. A source
+or built-HTML check is never presented as proof of rendered behaviour.
+
+### Production-browser evidence required before accepting visual work
+
+- `pnpm check` green
+- production build served and previewed at the real GitHub Pages base path
+- screenshots at 1920×1080 and 390×844, at both 10° and 80°
+- measured scene bounding boxes and overflow results
+- pointer, touch, and keyboard verification
+- resize mid-use with state preserved
+- reduced-motion verification
+- cold-load verification under throttling: with the cache disabled, the
+  stage, the control, and a correct initial explanation matching the
+  control's initial value are all present and correct before any script
+  runs — because the initial state is server-rendered, this must hold even
+  if the script never executes
+- no application-owned console errors or broken requests. There is no
+  performance sensor in this repo, so "does not cost performance" is a
+  judgement made at review against the motion rules above, not a measured
+  budget — don't report it as a measured pass
+- one read-only adversarial visual/accessibility review
 
 ## Commit sequence — one approval gate per commit
 
-1. `docs: lock the A1 rebuild plan` — this file.
-   Done when: committed, `pnpm check` green, tree clean.
-2. `harness: add rebuild safeguards for context loss, verification, and test integrity` —
-   minimal `CLAUDE.md` additions.
-   Done when: committed, `pnpm check` unaffected and green.
+Completed:
+
+1. `docs: lock the A1 rebuild plan` — done, `4dc56a6`.
+2. `harness: tighten A1 rules and verification` — done, `4f854e3`.
 3. `spec: state the Assignment 1 sun-elevation contract as a failing test` —
-   the one documented red commit: one new spec file asserting the built page
-   exposes the control and its outputs, and that operating the control
-   changes them.
-   Done when: committed with *only* that test failing, for the expected
-   reason (feature doesn't exist yet) — everything else green.
-4. `feat: the explainer, drivable and green against its own spec` — smallest
-   vertical slice: one elevation state, the range control, pointer/touch
-   reading into it, path/spectrum/explanation all driven by it.
-   Done when: full `pnpm check` green, including checkpoint 3's test, and
-   `pnpm preview` visibly shows the control driving all three outputs.
-5. `content: sharpen the scattering explanation and visual mapping` —
-   improve accuracy/clarity of copy and visuals, no new mechanic.
-   Done when: `pnpm check` green, no second mechanic introduced.
-6. `fix: <specific bug>` — zero or more, only for real findings from
-   production-browser verification (see below).
-   Done when: each named bug is fixed with `pnpm check` green after; if
-   nothing needs fixing, no commit, just a recorded pass.
-7. Coda gate — either two commits (`spec: state the session-trace coda
-   contract as a failing test`, then `feat: add the gated, in-memory
-   session-trace coda`) if accepted, or no commit if discarded.
-   Done when: the judgement is stated and, if accepted, both commits land
-   with `pnpm check` green at the end.
-8. `docs: write PROCESS.md from the rebuild history, and the assignment-1 reflection` —
-   from the real commits above only.
-   Done when: `pnpm check:evidence` and `pnpm check` both green.
-9. Ship — not a commit; `/ship` flips visibility and deploys.
-   Done when: full check + evidence green, explicit go-ahead given, live
-   URL verified at both viewports.
+   done, `25b9e08`; the one allowed deliberately-red commit.
+4. `feat: the explainer, drivable and green against its own spec` — done,
+   `ac25f45`; functional baseline, colour regression fixed, full suite green.
 
-## Production-browser verification conditions
+Remaining:
 
-Before any commit claims a UI change is done: build and serve with
-`pnpm build && pnpm preview` (not the dev server), open in real Chrome, and
-confirm at exactly 1920×1080 and exactly 390×844: keyboard-only operation
-works, pointer-drag and touch-drag both match the range control's value,
-resizing mid-interaction doesn't break state, `prefers-reduced-motion` is
-respected, and the console has no errors. If browser tooling isn't
-available in a session, that session stops and reports the gap instead of
-claiming the UI is done.
+5. `harness: require a full-screen atmospheric microgame`
+   Done when: this plan and `CLAUDE.md` carry the visual contract, suite
+   still green, no source touched.
+6. `feat: compose the full-screen atmospheric stage`
+   Done when: the desktop and phone acceptance criteria above are met in a
+   real browser, with measured bounding boxes.
+7. `feat: visualise atmospheric path and scattering`
+   Done when: path highlight, deterministic scattering marks, and warmer
+   transmitted light all derive from elevation and differ visibly between
+   10° and 80°.
+8. `feat: add causal motion and the horizon reveal`
+   Done when: motion satisfies the motion contract, and the reveal line
+   appears at or below 8° as a state of the one mechanic, reachable by
+   keyboard alone and exposed to assistive technology without chattering.
+9. `content: humanise the science explanation`
+   Done when: copy is accurate, plain, and within the stated scientific
+   scope, with the simplified-illustration framing intact.
+10. `fix: harden keyboard and reduced-motion behaviour`
+    Done when: keyboard-only operation, focus visibility, touch-target
+    size, and reduced-motion parity are all verified in a browser.
+11. `fix: polish responsive composition and performance`
+    Done when: both viewports pass with no overflow or collisions, and no
+    layout-property or full-screen-filter animation remains.
+12. Coda decision gate — either reject the privacy/footprint coda on the
+    record, or plan it separately as its own scoped slice. Not built here.
+    Done when: the decision and its reasoning are stated.
+13. `docs: record process evidence and reflection`
+    Done when: `PROCESS.md` and `reflections/assignment-1.md` are written
+    from the real history above, and `pnpm check:evidence` passes.
+14. Final preflight, deployment, and verification.
+    Done when: full check green, explicit go-ahead given, live URL verified
+    at both viewports.
+
+Each checkpoint that changes tracked files gets its own focused commit. A
+verification-only checkpoint that finds no required change records its
+evidence without manufacturing a commit. Unrelated checkpoints are still
+never combined into one commit. `PROCESS.md` is not pre-written — evidence is
+preserved as the work actually happens.

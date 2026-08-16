@@ -34,9 +34,10 @@ and see `spec/README.md` for how the checks in this repo relate to it.
   [the course site](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/topics/backpressure/#agent-browser-the-rendered-page-as-ground-truth),
   works well for this). The rendered page is the truth; your mental model of it
   isn't. Dev-server behaviour doesn't count as verified: for a major UI slice,
-  check the production build (`pnpm build && pnpm preview`) against
-  `PLAN.md`'s verification conditions, plus a throttled/cold-load pass,
-  before calling it done.
+  check the production build (`pnpm build && pnpm preview`) against the
+  acceptance and evidence lists in `PLAN.md`'s visual-direction contract
+  before calling it done. If this session has no browser tooling, stop and
+  report the verification gap --- never claim a UI slice is done unseen.
 - When a check fails, read its output before changing anything. Each check below
   names what it measures, and the failure message is the instruction: it tells
   you the file, the line, or the contract. Treat a red check as authoritative
@@ -191,7 +192,17 @@ stack or brief:
   zero permissions granted and the optional session-trace coda stays out of
   scope until its own decision gate. If a prompt or a proposed feature
   conflicts with this, stop and surface the conflict --- don't silently
-  resolve it either way.
+  resolve it either way. The detailed visual contract lives there too, not
+  here; this file carries only the standing rules.
+- The artefact is a full-screen atmospheric explainer, not a small form or
+  card page.
+- No new mechanic, permission, or heavy rendering dependency (Canvas, WebGL,
+  a 3D or animation library) without an explicit scope or architecture gate
+  first --- never as an incidental addition mid-slice.
+- Visual acceptance needs measured boxes and screenshots from the production
+  build, not a source reading. Both marking viewports (1920×1080, 390×844),
+  keyboard-only operation, resize mid-use, and reduced-motion parity are
+  blocking checks, not nice-to-haves.
 - After a resume, a compaction, or any context loss, re-read `PLAN.md`,
   `git status`, and recent `git log` before acting. Never reconstruct a lost
   instruction from memory --- ask instead.

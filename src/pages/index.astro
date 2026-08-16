@@ -100,6 +100,38 @@ const AIR_BANDS = [0, 1, 2, 3];
         <span class="receiver-core"></span>
       </div>
 
+      <div class="received-colour" data-testid="received-colour">
+        <span class="received-swatch" aria-hidden="true"></span>
+        <span>
+          <small>light that survived</small>
+          <strong>spectrum-derived colour</strong>
+        </span>
+      </div>
+
+      <aside class="model-strip" data-testid="airmass-model" aria-label="The three-step light model">
+        <p class="model-kicker">One slider · one causal model</p>
+        <ol>
+          <li>
+            <span class="model-number">01</span>
+            <strong>Air mass <output data-testid="airmass-value">×{scene.pathAmount.toFixed(1)}</output></strong>
+            <code>m(h) = 1 / (sin h + correction)</code>
+            <small>Low angles cross more atmosphere.</small>
+          </li>
+          <li>
+            <span class="model-number">02</span>
+            <strong>Fourth power</strong>
+            <code>scatter ∝ 1 / λ⁴</code>
+            <small>Short blue wavelengths turn aside fastest.</small>
+          </li>
+          <li>
+            <span class="model-number">03</span>
+            <strong>What survives</strong>
+            <code>T(λ) = e<sup>−τm/λ⁴</sup></code>
+            <small>The direct beam becomes dimmer and warmer.</small>
+          </li>
+        </ol>
+      </aside>
+
       <!-- Two labels, both in atmosphere space and anchored to the receiver.
            Keeping them out of the rotated beam frame means no counter-rotation,
            and so no chance of the box swinging off-screen at steep angles. -->

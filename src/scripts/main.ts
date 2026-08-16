@@ -77,20 +77,16 @@ export const SPECTRUM_BANDS: readonly SpectrumBand[] = [
 const RAYLEIGH_STRENGTH = 0.075;
 
 /**
- * Relative amount of air on the route: 1 straight up, rising as the Sun drops.
+ * Relative optical air mass: about 1 straight up, rising as the Sun drops.
  *
- * Real air mass goes as 1/sin(elevation), which diverges at the horizon. Rather
- * than clamp that — a clamp would freeze the model across the last few degrees,
- * exactly where the interesting states are — the sine is remapped into
- * [HORIZON_FLOOR, 1]. That stays bounded and stays *strictly* monotonic, so
- * every one-degree nudge still changes the answer right down to 0°.
+ * This is the Kasten–Young approximation. Unlike the tempting 1/sin(h)
+ * shortcut, it remains finite at the apparent horizon and keeps responding
+ * through every final degree of the instrument.
  */
-const HORIZON_FLOOR = 0.14;
-
 export function pathAmount(elevationDeg: number): number {
   const clamped = Math.min(MAX_ELEVATION, Math.max(MIN_ELEVATION, elevationDeg));
-  const sin = Math.sin((clamped * Math.PI) / 180);
-  return 1 / (sin * (1 - HORIZON_FLOOR) + HORIZON_FLOOR);
+  const radians = (clamped * Math.PI) / 180;
+  return 1 / (Math.sin(radians) + 0.50572 * (clamped + 6.07995) ** -1.6364);
 }
 
 function survives(relativeWavelength: number, air: number): number {
@@ -184,13 +180,6 @@ interface Rgb {
   readonly b: number;
 }
 
-// Anchor colours for the direct solar disc: warm orange-red near the
-// horizon, pale warm near-white overhead — never blue. The red channel is
-// pinned at 255 at both ends, so every colour in between keeps red as the
-// largest channel: the direct beam can never read as green or blue.
-const SUN_HORIZON: Rgb = { r: 255, g: 110, b: 40 };
-const SUN_ZENITH: Rgb = { r: 255, g: 244, b: 214 };
-
 // Anchor colours for the sky: warm orange near the horizon, blue overhead.
 // The green channel is pinned at 150 at both ends, so red and blue are
 // always the two channels doing the work of the transition — green never
@@ -205,6 +194,36 @@ function lerpRgb(zenith: Rgb, horizon: Rgb, warmth: number): Rgb {
 
 function toRgbString({ r, g, b }: Rgb): string {
   return `rgb(${r}, ${g}, ${b})`;
+}
+
+const clampUnit = (value: number): number => Math.min(1, Math.max(0, value));
+
+/**
+ * Convert the surviving channels into an illustrative display colour.
+ *
+ * The overhead state is the white reference, then the brightest current
+ * channel is normalised to full display intensity. That keeps chromaticity
+ * separate from total brightness (transmitStrength), like adjusting a camera
+ * exposure: useful for comparing colour, not calibrated radiance.
+ */
+export function receivedLightRgb(elevationDeg: number): Rgb {
+  const current = spectralTransmission(elevationDeg);
+  const overhead = spectralTransmission(MAX_ELEVATION);
+  const relative = {
+    r: current.red / overhead.red,
+    g: current.green / overhead.green,
+    b: current.blue / overhead.blue,
+  };
+  const peak = Math.max(relative.r, relative.g, relative.b, Number.EPSILON);
+  const encode = (linear: number): number =>
+    Math.round(255 * clampUnit(linear / peak) ** (1 / 2.2));
+
+  return { r: encode(relative.r), g: encode(relative.g), b: encode(relative.b) };
+}
+
+export function receivedLightColor(elevationDeg: number): string {
+  const { r, g, b } = receivedLightRgb(elevationDeg);
+  return "rgb(" + r + ", " + g + ", " + b + ")";
 }
 
 export function deriveScene(elevationDeg: number): SunScene {
@@ -234,16 +253,27 @@ export function deriveScene(elevationDeg: number): SunScene {
   // direct light left over — and what is left looks warmer. The floor on
   // scattering keeps a little blue in play overhead, because scattering never
   // actually stops; it just has less air to work with.
-  const scatterStrength = 0.08 + (1 - t) ** 0.85 * 0.92;
-  const scatterSpread = 0.3 + (1 - t) * 0.7;
-  const transmitStrength = 0.26 + t * 0.68;
+  const transmission = spectralTransmission(clamped);
+  const overhead = spectralTransmission(MAX_ELEVATION);
+  const relativeBrightness =
+    (transmission.red / overhead.red +
+      transmission.green / overhead.green +
+      transmission.blue / overhead.blue) /
+    3;
+  const scatterStrength = Math.max(
+    0.08,
+    clampUnit(1 - transmission.blue / overhead.blue),
+  );
+  const scatterSpread = 0.3 + scatterStrength * 0.7;
+  const transmitStrength = 0.16 + clampUnit(relativeBrightness) * 0.84;
 
-  // Warmth is squared so it's concentrated near the horizon, rather than
-  // fading linearly across the full 0-90° range — real skies are already
-  // blue well before the Sun reaches the zenith.
-  const warmth = (1 - t) ** 2;
-  const sunColor = toRgbString(lerpRgb(SUN_ZENITH, SUN_HORIZON, warmth));
-  const skyColor = toRgbString(lerpRgb(SKY_ZENITH, SKY_HORIZON, warmth));
+  // The direct-light colour and warmth now come from the same spectral model as
+  // the six arrival bands. The sky remains a deliberately qualitative artistic
+  // field: modelling diffuse sky radiance is outside this one-variable piece.
+  const received = receivedLightRgb(clamped);
+  const warmth = clampUnit((received.r - received.b) / 255);
+  const sunColor = toRgbString(received);
+  const skyColor = toRgbString(lerpRgb(SKY_ZENITH, SKY_HORIZON, (1 - t) ** 2));
 
   return {
     elevationDeg: clamped,
@@ -256,7 +286,7 @@ export function deriveScene(elevationDeg: number): SunScene {
     transmitStrength,
     transmitWarmth: warmth,
     pathAmount: pathAmount(clamped),
-    transmission: spectralTransmission(clamped),
+    transmission,
     skyColor,
     sunColor,
     explanation: explain(clamped, t),
@@ -308,6 +338,9 @@ function init(): void {
   const scene = document.querySelector<HTMLElement>('[data-testid="scene"]');
   const explanation = document.querySelector<HTMLOutputElement>("#explanation");
   const readout = document.querySelector<HTMLElement>('[data-testid="value-readout"]');
+  const airMassReadout = document.querySelector<HTMLOutputElement>(
+    '[data-testid="airmass-value"]',
+  );
   if (!range || !scene || !explanation) return;
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -321,6 +354,7 @@ function init(): void {
     scene.setAttribute("style", sceneStyle(next));
     explanation.textContent = next.explanation;
     if (readout) readout.textContent = `${Math.round(next.elevationDeg)}°`;
+    if (airMassReadout) airMassReadout.textContent = "×" + next.pathAmount.toFixed(1);
   };
 
   const stopPulse = (): void => {

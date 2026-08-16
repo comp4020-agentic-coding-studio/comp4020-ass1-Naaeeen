@@ -444,6 +444,149 @@ body {
     );
 }
 
+/* ---- model and received-light witness -------------------------------- */
+
+/* The payoff is duplicated at the destination as a large physical swatch.
+   It is not a second model: the same --sun-color that paints the disc and
+   arriving beam paints this witness. */
+.received-colour {
+  position: absolute;
+  z-index: 3;
+  top: var(--observer-y);
+  left: var(--observer-x);
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  max-width: 12rem;
+  translate: calc(6.4 * var(--u)) calc(2.1 * var(--u));
+  color: rgb(255 255 255 / 82%);
+  text-shadow: 0 1px 4px rgb(0 0 0 / 70%);
+  pointer-events: none;
+}
+
+.received-swatch {
+  flex: 0 0 auto;
+  width: clamp(2.2rem, 5.4vmin, 4.5rem);
+  aspect-ratio: 1;
+  border: 1px solid rgb(255 255 255 / 55%);
+  border-radius: 50%;
+  background: var(--sun-color, rgb(255 200 157));
+  box-shadow:
+    0 0 0 0.3rem rgb(12 18 13 / 28%),
+    0 0 2.4rem var(--sun-color, rgb(255 200 157));
+}
+
+.received-colour small,
+.received-colour strong {
+  display: block;
+}
+
+.received-colour small {
+  color: rgb(255 255 255 / 58%);
+  font-size: 0.57rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.received-colour strong {
+  margin-top: 0.1rem;
+  font-size: clamp(0.66rem, 1.1vmin, 0.8rem);
+  font-weight: 560;
+  line-height: 1.25;
+}
+
+/* A terse causal chain, overlaid like an instrument engraving rather than
+   boxed into a lesson card. It names the approximation and equations without
+   presenting the resulting values as calibrated measurements. */
+.model-strip {
+  position: absolute;
+  z-index: 2;
+  top: 22%;
+  right: 1rem;
+  width: min(18rem, 72vw);
+  color: rgb(255 255 255 / 78%);
+  text-shadow: 0 1px 4px rgb(0 0 0 / 70%);
+  pointer-events: none;
+}
+
+.model-kicker {
+  margin: 0 0 0.4rem;
+  color: rgb(255 255 255 / 52%);
+  font-size: 0.56rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.model-strip ol {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.model-strip li {
+  position: relative;
+  min-width: 0;
+  padding-top: 0.45rem;
+  border-top: 1px solid rgb(255 255 255 / 30%);
+}
+
+.model-number {
+  display: block;
+  color: rgb(255 255 255 / 42%);
+  font-size: 0.5rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
+
+.model-strip strong,
+.model-strip code,
+.model-strip small {
+  display: block;
+}
+
+.model-strip strong {
+  font-size: clamp(0.61rem, 1.1vmin, 0.76rem);
+  font-weight: 600;
+}
+
+.model-strip output {
+  color: var(--sun-color, rgb(255 200 157));
+  font-variant-numeric: tabular-nums;
+}
+
+.model-strip code {
+  overflow: hidden;
+  margin-top: 0.16rem;
+  color: rgb(255 255 255 / 70%);
+  font-family: ui-monospace, "Cascadia Mono", monospace;
+  font-size: clamp(0.48rem, 0.9vmin, 0.64rem);
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.model-strip small {
+  display: none;
+  margin-top: 0.22rem;
+  color: rgb(255 255 255 / 54%);
+  font-size: 0.6rem;
+  line-height: 1.3;
+}
+
+@media (width >= 60rem) {
+  .model-strip {
+    inset: auto auto 16% clamp(2rem, 3vw, 3.5rem);
+    width: min(35rem, 40vw);
+  }
+
+  .model-strip small {
+    display: block;
+  }
+}
+
 /* ---- in-scene labels -------------------------------------------------- */
 
 /* Two quiet annotations with a hairline leader, rather than underlined captions.

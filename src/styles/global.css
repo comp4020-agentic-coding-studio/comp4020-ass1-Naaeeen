@@ -14,8 +14,17 @@ body {
 
 /* The stage is the complete experience: it fills the viewport and holds both
    the illustration and the instrument rail. The elevation state arrives here
-   as custom properties and inherits into the children below. */
+   as custom properties and inherits into the children below.
+
+   `--u` is the scene's one length unit. Everything geometric is a multiple of
+   it, so the whole illustration scales together and the ratio between two
+   elevation states is identical at every viewport size. It is clamped by
+   width as well as height so the low Sun cannot run off a narrow screen. */
 .stage {
+  --u: min(1.05vh, 1.95vw);
+  --observer-x: 22%;
+  --observer-y: 84%;
+
   position: relative;
   display: flex;
   flex-direction: column;
@@ -24,64 +33,196 @@ body {
   height: 100dvh;
 }
 
+/* The scene unit follows the same dynamic viewport the stage is sized in, so
+   the geometry and its container agree when mobile browser chrome appears or
+   retracts. Declared separately because a second `--u` in the block above
+   would be a duplicate declaration. */
+@supports (height: 1dvh) {
+  .stage {
+    --u: min(1.05dvh, 1.95vw);
+  }
+}
+
 /* The illustrated atmosphere. Clipping here is part of the illustration —
-   the sun's bloom is meant to run off the edges of the sky, not spill into
-   document layout. */
+   light and scattered marks are meant to run off the edges of the sky, not
+   spill into document layout. */
 .atmosphere {
   position: relative;
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  background-color: var(--sky-color, rgb(131 150 195));
+  background-color: var(--sky-color, rgb(144 150 184));
   background-image:
     radial-gradient(
       120% 80% at 50% 100%,
-      rgb(0 0 0 / 35%) 0%,
-      rgb(0 0 0 / 0%) 60%
+      rgb(0 0 0 / 32%) 0%,
+      rgb(0 0 0 / 0%) 62%
     ),
-    linear-gradient(to bottom, rgb(0 0 0 / 22%) 0%, rgb(0 0 0 / 0%) 45%);
+    linear-gradient(to bottom, rgb(0 0 0 / 20%) 0%, rgb(0 0 0 / 0%) 48%);
 }
 
-/* Inset from the top so the Sun's travel never runs under the title overlay.
-   The script drives --sun-top across roughly 8%-78%; this track maps that
-   range into the clear band below the overlay. */
-.sun-track {
+/* Depth near the ground, so the lower sky reads as thicker air. */
+.haze {
   position: absolute;
-  inset: 17% 0 0;
+  right: 0;
+  bottom: 16%;
+  left: 0;
+  height: 52%;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--sky-color, rgb(144 150 184)) 70%, white) 0%,
+    color-mix(in srgb, var(--sky-color, rgb(144 150 184)) 86%, white) 38%,
+    rgb(255 255 255 / 0%) 100%
+  );
+  opacity: calc(0.18 + 0.34 * var(--scatter-strength, 0.6));
+}
+
+/* ---- the light route -------------------------------------------------- */
+
+.beam-anchor {
+  position: absolute;
+  top: var(--observer-y);
+  left: var(--observer-x);
+  width: 0;
+  height: 0;
+}
+
+/* One rotation for the whole system. +x runs along the route toward the Sun. */
+.beam-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  rotate: calc(-1 * var(--beam-angle, 44deg));
+}
+
+/* The whole Sun-to-observer route: soft, volumetric, warm at the ground end. */
+.beam {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(var(--beam-len, 49) * var(--u));
+  height: calc(1.5 * var(--u));
+  translate: 0 -50%;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--sun-color, rgb(255 200 157)) 70%, white)
+      calc(4% + 26% * var(--transmit-strength, 0.6)),
+    var(--sun-color, rgb(255 200 157)) 100%
+  );
+  opacity: calc(0.34 + 0.42 * var(--transmit-strength, 0.6));
+  filter: blur(calc(0.42 * var(--u)));
+}
+
+/* The stretch of air the light has to cross: brighter, denser, and visibly
+   longer when the Sun is low. Anchored at the observer, growing outward. */
+.atmos-path {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(var(--path-len, 30) * var(--u));
+  height: calc(3.2 * var(--u));
+  translate: 0 -50%;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    rgb(255 255 255 / 6%) 0%,
+    rgb(255 255 255 / 30%) 45%,
+    rgb(255 255 255 / 10%) 100%
+  );
+  box-shadow: 0 0 calc(2.4 * var(--u)) rgb(255 255 255 / 16%);
+}
+
+/* The scattering field rides along that stretch. */
+.scattering {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 0;
+}
+
+/* Blue light turned aside out of the route — redirected, not destroyed, so
+   the marks stay visible as they fan away. A fixed set of 16; elevation
+   changes how far they reach and how strongly they read, never how many. */
+.scatter-mark {
+  position: absolute;
+  top: 0;
+  left: calc(var(--along) * 100%);
+  width: calc((2 + 4.4 * var(--reach)) * var(--u));
+  height: calc(0.36 * var(--u));
+  transform-origin: left center;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    rgb(150 202 255 / 95%) 0%,
+    rgb(120 176 255 / 45%) 55%,
+    rgb(120 176 255 / 0%) 100%
+  );
+  rotate: calc(var(--side) * 52deg + var(--tilt));
+  translate: 0
+    calc(var(--side) * var(--reach) * var(--scatter-spread, 0.65) * 7 * var(--u));
+  opacity: calc(0.25 + 0.72 * var(--scatter-strength, 0.6));
+}
+
+/* What survives the crossing and reaches the ground: short, warm, and dimmer
+   when the Sun is low. */
+.transmitted {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(13 * var(--u));
+  height: calc(2.1 * var(--u));
+  translate: 0 -50%;
+  border-radius: 999px;
+  background: linear-gradient(
+    to left,
+    rgb(255 255 255 / 0%) 0%,
+    color-mix(
+        in srgb,
+        var(--sun-color, rgb(255 200 157))
+          calc(55% + 40% * var(--transmit-warmth, 0.3)),
+        white
+      )
+      88%
+  );
+  opacity: calc(0.3 + 0.68 * var(--transmit-strength, 0.6));
 }
 
 .sun-disc,
 .sun-bloom {
   position: absolute;
-  top: var(--sun-top, 43%);
-  left: 50%;
+  top: 0;
+  left: calc(var(--beam-len, 49) * var(--u));
   border-radius: 50%;
   translate: -50% -50%;
 }
 
 .sun-disc {
-  width: clamp(2.5rem, 4.5vmin, 4rem);
+  width: clamp(2.2rem, 4.2vmin, 3.6rem);
   aspect-ratio: 1;
-  background: var(--sun-color, rgb(255 211 171));
-  box-shadow: 0 0 2.5rem 0.5rem rgb(255 255 255 / 22%);
+  background: var(--sun-color, rgb(255 200 157));
+  box-shadow: 0 0 calc(2.6 * var(--u)) calc(0.5 * var(--u)) rgb(255 255 255 / 26%);
 }
 
 .sun-bloom {
-  width: clamp(9rem, 26vmin, 22rem);
+  width: clamp(8rem, 24vmin, 20rem);
   aspect-ratio: 1;
   background: radial-gradient(
     circle,
-    color-mix(in srgb, var(--sun-color, rgb(255 211 171)) 55%, transparent) 0%,
-    transparent 68%
+    color-mix(in srgb, var(--sun-color, rgb(255 200 157)) 52%, transparent) 0%,
+    transparent 70%
   );
 }
+
+/* ---- ground and observer ---------------------------------------------- */
 
 .horizon {
   position: absolute;
   right: 0;
   bottom: 0;
   left: 0;
-  height: 17%;
+  height: 16%;
   background: #141c17;
   clip-path: polygon(
     0% 38%,
@@ -98,43 +239,75 @@ body {
   );
 }
 
+/* A clear endpoint: this is where the light lands, and where "you" are. */
 .observer {
   position: absolute;
-  bottom: 13%;
-  left: 22%;
-  width: 0.55rem;
+  top: var(--observer-y);
+  left: var(--observer-x);
+  width: calc(1.5 * var(--u));
   aspect-ratio: 1;
+  translate: -50% -50%;
   border-radius: 50%;
-  background: #f4f1ea;
-  box-shadow: 0 0 0 0.35rem rgb(20 28 23 / 65%);
+  background: #f6f3ec;
+  box-shadow: 0 0 0 calc(0.5 * var(--u)) rgb(20 28 23 / 78%);
 }
 
-/* Subordinated for now: a thin read-out of path length. Checkpoint 7 replaces
-   this with the real beam and scattering system. */
-.path-gauge {
+.observer-ring {
   position: absolute;
-  right: clamp(0.75rem, 2vw, 2rem);
-  bottom: 19%;
-  display: flex;
-  align-items: flex-end;
-  width: 0.3rem;
-  height: 58%;
-  overflow: hidden;
-  border-radius: 999px;
-  background: rgb(255 255 255 / 18%);
+  top: 50%;
+  left: 50%;
+  width: calc(5.2 * var(--u));
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border: 1px solid rgb(246 243 236 / 45%);
+  border-radius: 50%;
 }
 
-.path-gauge-fill {
-  width: 100%;
-  height: var(--path-height, 53%);
-  background: rgb(255 255 255 / 70%);
+/* ---- in-scene labels -------------------------------------------------- */
+
+.scene-label {
+  position: absolute;
+  margin: 0;
+  color: rgb(255 255 255 / 72%);
+  font-size: clamp(0.62rem, 1.05vmin, 0.78rem);
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 45%);
+  pointer-events: none;
 }
 
-/* Restrained overlay: sits above the sky without becoming a panel. */
+/* Rides the scattering field so it always labels the marks rather than empty
+   sky. The counter-rotation cancels the beam frame's, keeping the text level
+   while its offset stays perpendicular to the route. */
+.scene-label-scatter {
+  top: 0;
+  left: 34%;
+  transform-origin: left center;
+  white-space: nowrap;
+  rotate: var(--beam-angle, 44deg);
+  translate: 0 calc(-7.6 * var(--u) * var(--scatter-spread, 0.65));
+  opacity: calc(0.24 + 0.76 * var(--scatter-strength, 0.6));
+}
+
+/* Anchored to the observer in the same unit the observer is placed in, so it
+   travels with its referent instead of drifting on a percentage of its own. */
+.scene-label-direct {
+  top: var(--observer-y);
+  left: var(--observer-x);
+  white-space: nowrap;
+  translate: calc(-100% - 2.4 * var(--u)) calc(-3.4 * var(--u));
+}
+
+/* ---- overlay and rail ------------------------------------------------- */
+
+/* Width-capped as a share of the viewport, not just in characters: at high
+   elevation the Sun climbs into the upper-left, and every line of overlay
+   text has to finish before that column on a narrow screen. */
 .overlay {
   position: absolute;
   top: 0;
   left: 0;
+  max-width: min(30rem, 42%);
   padding: clamp(1rem, 2.5vw, 2rem) clamp(1rem, 3vw, 3rem);
   padding-top: max(clamp(1rem, 2.5vw, 2rem), env(safe-area-inset-top));
   padding-left: max(clamp(1rem, 3vw, 3rem), env(safe-area-inset-left));
@@ -159,6 +332,9 @@ body {
   text-decoration: underline;
 }
 
+/* Only a measure cap here — the overlay above already keeps every line clear
+   of the Sun's high-elevation column, and a percentage would resolve against
+   that narrowed overlay and shred the title into one word per line. */
 .overlay h1 {
   max-width: 18ch;
   margin: 0.35rem 0 0;
@@ -200,7 +376,7 @@ body {
   flex: 1;
   max-width: 34rem;
   height: 2.75rem; /* keeps the touch target >= 44 CSS px on the input itself */
-  accent-color: var(--sun-color, rgb(255 211 171));
+  accent-color: var(--sun-color, rgb(255 200 157));
 }
 
 .rail input[type="range"]:focus-visible {
@@ -232,12 +408,37 @@ body {
   }
 }
 
-/* Colour settles when the state changes; position updates immediately. No
-   layout property is animated, and nothing animates on its own clock. */
+/* State settles rather than snapping. Only rotation, translation and opacity
+   are transitioned — never width or position — and nothing animates on its
+   own clock. Checkpoint 8 owns the richer causal motion. */
 @media (prefers-reduced-motion: no-preference) {
+  .beam-frame {
+    transition: rotate 0.2s ease-out;
+  }
+
+  .beam,
+  .atmos-path,
+  .transmitted,
+  .scatter-mark,
+  .haze {
+    transition:
+      opacity 0.2s ease-out,
+      translate 0.2s ease-out;
+  }
+
+  /* Its rotation cancels the beam frame's, so it has to ease on the same
+     curve — otherwise the cancellation snaps while the frame is still
+     turning and the text sits visibly tilted mid-drag. */
+  .scene-label-scatter {
+    transition:
+      opacity 0.2s ease-out,
+      translate 0.2s ease-out,
+      rotate 0.2s ease-out;
+  }
+
   .atmosphere,
   .sun-disc,
   .sun-bloom {
-    transition: background-color 0.18s ease, background 0.18s ease;
+    transition: background 0.2s ease-out;
   }
 }

@@ -3,6 +3,7 @@ import Layout from "../layouts/Layout.astro";
 import {
   deriveScene,
   sceneStyle,
+  SCATTER_MARKS,
   INITIAL_ELEVATION,
   MIN_ELEVATION,
   MAX_ELEVATION,
@@ -15,10 +16,10 @@ const sceneStyleAttr = sceneStyle(scene);
 <Layout title="The Sun Never Turned Red">
   <!--
     The stage is the whole viewport-scale experience and carries the canonical
-    elevation state as CSS custom properties, which inherit down into the
-    atmosphere. It is deliberately not role="img": it contains the range
-    control, and image semantics would bury it. The visual description lives
-    on the atmosphere field instead.
+    elevation state as CSS custom properties, which inherit down into every
+    part of the illustration. It is deliberately not role="img": it contains
+    the range control, and image semantics would bury it. The visual
+    description lives on the atmosphere field instead.
   -->
   <main
     class="stage"
@@ -30,17 +31,46 @@ const sceneStyleAttr = sceneStyle(scene);
       class="atmosphere"
       data-testid="atmosphere"
       role="img"
-      aria-label="A Sun above a dark horizon. As the Sun moves lower, its light crosses a longer stretch of atmosphere and the light reaching the ground turns warmer."
+      aria-label="A diagram of sunlight travelling to a marked observation point on the ground. Lowering the Sun lengthens and flattens the route, so more blue light is turned aside out of it and spreads across the sky, and the light still arriving is warmer and dimmer. Raising the Sun shortens and steepens the route, so less blue is turned aside and the arriving light stays pale. The written explanation below the control describes the current setting."
     >
-      <div class="sun-track">
-        <div class="sun-bloom"></div>
-        <div class="sun-disc"></div>
+      <div class="haze"></div>
+
+      <!-- Everything geometric hangs off the observer and is rotated by the
+           one derived beam angle, so the route, the lit traverse, the
+           scattering and the Sun can never drift out of alignment. -->
+      <div class="beam-anchor">
+        <div class="beam-frame">
+          <div class="beam" data-testid="direct-beam"></div>
+
+          <div class="atmos-path" data-testid="atmospheric-path">
+            <div class="scattering" data-testid="scattering-layer">
+              {
+                SCATTER_MARKS.map((mark) => (
+                  <span
+                    class="scatter-mark"
+                    data-testid="scatter-mark"
+                    style={`--along:${mark.along};--side:${mark.side};--reach:${mark.reach.toFixed(3)};--tilt:${mark.tilt.toFixed(2)}deg;`}
+                  />
+                ))
+              }
+              <span class="scene-label scene-label-scatter">scattered blue light</span>
+            </div>
+          </div>
+
+          <div class="transmitted" data-testid="transmitted-beam"></div>
+
+          <div class="sun-bloom"></div>
+          <div class="sun-disc"></div>
+        </div>
       </div>
-      <div class="path-gauge" aria-hidden="true">
-        <div class="path-gauge-fill"></div>
-      </div>
+
       <div class="horizon"></div>
-      <div class="observer" aria-hidden="true"></div>
+
+      <div class="observer">
+        <span class="observer-ring"></span>
+      </div>
+
+      <p class="scene-label scene-label-direct">light reaching you</p>
     </div>
 
     <header class="overlay">

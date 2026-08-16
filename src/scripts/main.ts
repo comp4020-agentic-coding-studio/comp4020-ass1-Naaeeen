@@ -1,8 +1,9 @@
-// One canonical elevation value drives every visible output — the scene's
-// sun position and colour, the atmospheric-path gauge, and the explanation
-// text. `deriveScene` is a pure function so the server-rendered initial
-// markup (see index.astro) and the client-side update on every `input`
-// event compute the exact same thing from the exact same number.
+// One canonical elevation value drives every visible output — where the Sun
+// sits, the angle and length of its route to the observer, how much light is
+// scattered aside, how much still arrives, the sky and Sun colours, and the
+// explanation text. `deriveScene` is a pure function so the server-rendered
+// markup (see index.astro) and the client-side update on every `input` event
+// compute the exact same thing from the exact same number.
 
 export const MIN_ELEVATION = 0;
 export const MAX_ELEVATION = 90;
@@ -10,12 +11,51 @@ export const INITIAL_ELEVATION = 45;
 
 export interface SunScene {
   readonly elevationDeg: number;
-  readonly sunTopPercent: number;
-  readonly pathPercent: number;
+  /** Angle of the Sun-to-observer route, in degrees above the ground. */
+  readonly beamAngleDeg: number;
+  /** Whole route length, in `--u` units (see global.css). */
+  readonly beamLength: number;
+  /** Fraction of that route drawn as the lit atmospheric traverse, 0-1. */
+  readonly pathFraction: number;
+  /** The traverse itself, in `--u` units: beamLength x pathFraction. */
+  readonly pathLength: number;
+  /** How much short-wavelength light is being turned aside, 0-1. */
+  readonly scatterStrength: number;
+  /** How far the redirected light spreads from the route, 0-1. */
+  readonly scatterSpread: number;
+  /** How much direct light still reaches the observer, 0-1. */
+  readonly transmitStrength: number;
+  /** How warm that surviving direct light looks, 0-1. */
+  readonly transmitWarmth: number;
   readonly skyColor: string;
   readonly sunColor: string;
   readonly explanation: string;
 }
+
+export interface ScatterMark {
+  /** Position along the lit traverse, 0-1. */
+  readonly along: number;
+  /** Which side of the route this light is turned toward: -1 or 1. */
+  readonly side: number;
+  /** How far out this mark reaches, 0-1. */
+  readonly reach: number;
+  /** Extra fan angle, in degrees. */
+  readonly tilt: number;
+}
+
+// A fixed cast of marks, not a particle system: positions come from the index
+// so the same 16 marks ship every build and every render. Elevation changes
+// how far they reach and how visible they are, never how many there are or
+// where they start — which keeps the scene verifiable.
+export const SCATTER_MARKS: readonly ScatterMark[] = Array.from(
+  { length: 16 },
+  (_unused, i): ScatterMark => ({
+    along: (i + 0.6) / 16,
+    side: i % 2 === 0 ? -1 : 1,
+    reach: 0.38 + (((i * 37) % 16) / 15) * 0.62,
+    tilt: -26 + (((i * 53) % 11) / 10) * 52,
+  }),
+);
 
 interface Rgb {
   readonly r: number;
@@ -50,8 +90,32 @@ export function deriveScene(elevationDeg: number): SunScene {
   const clamped = Math.min(MAX_ELEVATION, Math.max(MIN_ELEVATION, elevationDeg));
   const t = clamped / MAX_ELEVATION; // 0 at the horizon, 1 overhead
 
-  const sunTopPercent = 78 - t * 70;
-  const pathPercent = 12 + (1 - t) * 82;
+  // A low Sun sits far off toward the horizon, so its light arrives along a
+  // shallow, drawn-out route; a high Sun is steep and close. Both the angle
+  // and the length of the route come from this one number, so the geometry
+  // can never disagree with the colour or the words.
+  const beamAngleDeg = 14 + t * 60;
+  const beamLength = 32 + t * 28;
+
+  // The share of that route drawn as atmosphere the light has to cross. It
+  // shrinks as the Sun climbs, which is the whole point: the shallow route
+  // spends far longer in the air. Kept <= 1 so the lit traverse can never be
+  // longer than the route it lies on.
+  //
+  // These two curves are tuned together, not independently. The route grows
+  // as the Sun rises while this share shrinks, and the shrink has to win at
+  // every elevation, or a higher Sun could end up with a *longer* lit path —
+  // which would be backwards. `spec/light-story.test.ts` pins that down.
+  const pathFraction = 0.96 - t * 0.88;
+  const pathLength = beamLength * pathFraction;
+
+  // More air crossed means more short-wavelength light turned aside, so less
+  // direct light left over — and what is left looks warmer. The floor on
+  // scattering keeps a little blue in play overhead, because scattering never
+  // actually stops; it just has less air to work with.
+  const scatterStrength = 0.08 + (1 - t) ** 0.85 * 0.92;
+  const scatterSpread = 0.3 + (1 - t) * 0.7;
+  const transmitStrength = 0.26 + t * 0.68;
 
   // Warmth is squared so it's concentrated near the horizon, rather than
   // fading linearly across the full 0-90° range — real skies are already
@@ -62,8 +126,14 @@ export function deriveScene(elevationDeg: number): SunScene {
 
   return {
     elevationDeg: clamped,
-    sunTopPercent,
-    pathPercent,
+    beamAngleDeg,
+    beamLength,
+    pathFraction,
+    pathLength,
+    scatterStrength,
+    scatterSpread,
+    transmitStrength,
+    transmitWarmth: warmth,
     skyColor,
     sunColor,
     explanation: explain(clamped, t),
@@ -81,12 +151,19 @@ function explain(elevationDeg: number, t: number): string {
   return `At ${degrees}° the Sun is near the horizon. Its light crosses a much longer stretch of atmosphere, scattering away most of the short-wavelength light — the direct beam that reaches here looks distinctly warm, even though the Sun itself hasn't changed colour.`;
 }
 
+const round = (n: number): string => n.toFixed(3);
+
 export function sceneStyle(scene: SunScene): string {
   return (
-    `--sun-top:${scene.sunTopPercent}%;` +
+    `--beam-angle:${round(scene.beamAngleDeg)}deg;` +
+    `--beam-len:${round(scene.beamLength)};` +
+    `--path-len:${round(scene.pathLength)};` +
+    `--scatter-strength:${round(scene.scatterStrength)};` +
+    `--scatter-spread:${round(scene.scatterSpread)};` +
+    `--transmit-strength:${round(scene.transmitStrength)};` +
+    `--transmit-warmth:${round(scene.transmitWarmth)};` +
     `--sun-color:${scene.sunColor};` +
-    `--sky-color:${scene.skyColor};` +
-    `--path-height:${scene.pathPercent}%;`
+    `--sky-color:${scene.skyColor};`
   );
 }
 

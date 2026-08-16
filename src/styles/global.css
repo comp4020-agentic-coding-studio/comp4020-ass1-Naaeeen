@@ -1,94 +1,243 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  padding: 2rem;
   font-family: system-ui, sans-serif;
   line-height: 1.6;
-  color: #1a1a1a;
+  color: #f4f1ea;
+  background: #10151c;
 }
 
-main {
-  max-width: 40rem;
-  margin: 0 auto;
-}
-
-a {
-  color: #0b5fff;
-}
-
-.controls {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin: 1.5rem 0;
-}
-
-.controls input[type="range"] {
-  flex: 1;
-  max-width: 24rem;
-}
-
-.scene {
+/* The stage is the complete experience: it fills the viewport and holds both
+   the illustration and the instrument rail. The elevation state arrives here
+   as custom properties and inherits into the children below. */
+.stage {
   position: relative;
-  height: 14rem;
-  overflow: hidden;
-  border: 1px solid #ddd;
-  border-radius: 0.5rem;
-  background: var(--sky-color, hsl(210deg 65% 60%));
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100svh;
+  height: 100dvh;
 }
 
-.scene-ground {
+/* The illustrated atmosphere. Clipping here is part of the illustration —
+   the sun's bloom is meant to run off the edges of the sky, not spill into
+   document layout. */
+.atmosphere {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background-color: var(--sky-color, rgb(131 150 195));
+  background-image:
+    radial-gradient(
+      120% 80% at 50% 100%,
+      rgb(0 0 0 / 35%) 0%,
+      rgb(0 0 0 / 0%) 60%
+    ),
+    linear-gradient(to bottom, rgb(0 0 0 / 22%) 0%, rgb(0 0 0 / 0%) 45%);
+}
+
+/* Inset from the top so the Sun's travel never runs under the title overlay.
+   The script drives --sun-top across roughly 8%-78%; this track maps that
+   range into the clear band below the overlay. */
+.sun-track {
+  position: absolute;
+  inset: 17% 0 0;
+}
+
+.sun-disc,
+.sun-bloom {
+  position: absolute;
+  top: var(--sun-top, 43%);
+  left: 50%;
+  border-radius: 50%;
+  translate: -50% -50%;
+}
+
+.sun-disc {
+  width: clamp(2.5rem, 4.5vmin, 4rem);
+  aspect-ratio: 1;
+  background: var(--sun-color, rgb(255 211 171));
+  box-shadow: 0 0 2.5rem 0.5rem rgb(255 255 255 / 22%);
+}
+
+.sun-bloom {
+  width: clamp(9rem, 26vmin, 22rem);
+  aspect-ratio: 1;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--sun-color, rgb(255 211 171)) 55%, transparent) 0%,
+    transparent 68%
+  );
+}
+
+.horizon {
   position: absolute;
   right: 0;
   bottom: 0;
   left: 0;
-  height: 22%;
-  background: #35462f;
+  height: 17%;
+  background: #141c17;
+  clip-path: polygon(
+    0% 38%,
+    12% 30%,
+    26% 41%,
+    38% 24%,
+    52% 36%,
+    64% 26%,
+    78% 39%,
+    90% 31%,
+    100% 40%,
+    100% 100%,
+    0% 100%
+  );
 }
 
-.scene-sun {
+.observer {
   position: absolute;
-  top: var(--sun-top, 45%);
-  left: 50%;
-  width: 2.75rem;
-  height: 2.75rem;
-  margin: -1.375rem 0 0 -1.375rem;
+  bottom: 13%;
+  left: 22%;
+  width: 0.55rem;
+  aspect-ratio: 1;
   border-radius: 50%;
-  background: var(--sun-color, hsl(45deg 90% 60%));
+  background: #f4f1ea;
+  box-shadow: 0 0 0 0.35rem rgb(20 28 23 / 65%);
 }
 
-.scene-path-track {
+/* Subordinated for now: a thin read-out of path length. Checkpoint 7 replaces
+   this with the real beam and scattering system. */
+.path-gauge {
   position: absolute;
-  right: 1rem;
-  bottom: 22%;
+  right: clamp(0.75rem, 2vw, 2rem);
+  bottom: 19%;
   display: flex;
   align-items: flex-end;
-  width: 0.75rem;
-  height: 68%;
+  width: 0.3rem;
+  height: 58%;
   overflow: hidden;
   border-radius: 999px;
-  background: #ffffff40;
+  background: rgb(255 255 255 / 18%);
 }
 
-.scene-path-fill {
+.path-gauge-fill {
   width: 100%;
-  height: var(--path-height, 40%);
-  background: #fffc;
+  height: var(--path-height, 53%);
+  background: rgb(255 255 255 / 70%);
 }
 
-.disclaimer {
-  color: #555;
-  font-size: 0.85rem;
+/* Restrained overlay: sits above the sky without becoming a panel. */
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: clamp(1rem, 2.5vw, 2rem) clamp(1rem, 3vw, 3rem);
+  padding-top: max(clamp(1rem, 2.5vw, 2rem), env(safe-area-inset-top));
+  padding-left: max(clamp(1rem, 3vw, 3rem), env(safe-area-inset-left));
+  pointer-events: none;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 45%);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .scene,
-  .scene-sun {
-    transition:
-      background 0.15s ease,
-      top 0.15s ease;
+.overlay nav {
+  pointer-events: auto;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.overlay a {
+  color: rgb(255 255 255 / 78%);
+  text-decoration: none;
+}
+
+.overlay a:hover,
+.overlay a:focus-visible {
+  text-decoration: underline;
+}
+
+.overlay h1 {
+  max-width: 18ch;
+  margin: 0.35rem 0 0;
+  font-size: clamp(1.35rem, 3.2vw, 2.4rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.instruction {
+  margin: 0.35rem 0 0;
+  color: rgb(255 255 255 / 82%);
+  font-size: clamp(0.85rem, 1.5vw, 1rem);
+}
+
+/* The rail reads as ground continuing from the horizon, not a floating card. */
+.rail {
+  display: grid;
+  flex-shrink: 0;
+  gap: 0.5rem 2rem;
+  padding: clamp(0.85rem, 1.8vh, 1.5rem) clamp(1rem, 3vw, 3rem);
+  padding-bottom: max(clamp(0.85rem, 1.8vh, 1.5rem), env(safe-area-inset-bottom));
+  background: #141c17;
+}
+
+.rail-control {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.rail-control label {
+  flex-shrink: 0;
+  color: rgb(244 241 234 / 85%);
+  font-size: 0.9rem;
+}
+
+.rail input[type="range"] {
+  flex: 1;
+  max-width: 34rem;
+  height: 2.75rem; /* keeps the touch target >= 44 CSS px on the input itself */
+  accent-color: var(--sun-color, rgb(255 211 171));
+}
+
+.rail input[type="range"]:focus-visible {
+  outline: 3px solid #f4f1ea;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.rail-output {
+  max-width: 68ch;
+  color: rgb(244 241 234 / 92%);
+  font-size: clamp(0.85rem, 1.4vw, 1rem);
+}
+
+.rail-note {
+  margin: 0;
+  color: rgb(244 241 234 / 55%);
+  font-size: 0.78rem;
+}
+
+@media (width >= 60rem) {
+  .rail {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
   }
 
-  .scene-path-fill {
-    transition: height 0.15s ease;
+  .rail-note {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Colour settles when the state changes; position updates immediately. No
+   layout property is animated, and nothing animates on its own clock. */
+@media (prefers-reduced-motion: no-preference) {
+  .atmosphere,
+  .sun-disc,
+  .sun-bloom {
+    transition: background-color 0.18s ease, background 0.18s ease;
   }
 }

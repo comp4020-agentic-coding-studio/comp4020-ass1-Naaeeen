@@ -7,6 +7,11 @@ short-wavelength light from the direct beam, which changes what the visitor
 sees and how it's explained — one physical cause, one visible effect. The
 Sun itself never changes colour.
 
+The optional coda turns the same observer around: while the visitor uses the
+instrument, the browser can describe the visit from ordinary, local session
+signals. It is a short reveal about mediated observation, not a second app or
+an excuse to collect data.
+
 ## Core interaction
 
 The visitor drags, touches, or keys one control (a native range input) to
@@ -28,9 +33,15 @@ lockstep, from that single value:
 - the explanation text
 - the near-horizon reveal state
 
-No output holds independent state. No randomised particle counts or
+No physics output holds independent state. No randomised particle counts or
 per-frame jitter that would make verification unstable — anything visual
 that varies must be a deterministic function of elevation.
+
+The coda may keep a separate, ephemeral session summary (elapsed time,
+elevation changes, input modality, resize/visibility events, and browser
+display preferences). It exists only in memory, is never persisted or sent,
+records no content typed by the visitor, and is erased on refresh or by the
+visible erase action.
 
 ## Scientific scope and limitations
 
@@ -55,16 +66,42 @@ attributing the phenomenon to particles the model doesn't have is not.
 - No camera, microphone, notifications, or device-orientation access.
 - No geolocation (deferred, not attempted).
 - No backend, accounts, analytics, persistence, or cookies.
-- No second interactive mechanic — every feature answers to the one
-  canonical elevation state, or it doesn't ship.
+- No second exploratory simulation — elevation remains the only physics
+  control. The coda's aperture trigger and slide navigation only reveal the
+  session produced while using that control.
 - No scores, lives, levels, or timers.
-- No second page.
+- No second route or network-loaded page. The coda is a same-document scene.
 - No remote assets or remote fonts.
 - No new animation dependency.
 - No Canvas, WebGL, or Three.js in the next implementation slice. If one
   later looks genuinely necessary, it requires its own architecture
   decision first — not an incidental addition mid-slice.
 - The core lesson works completely with zero permissions granted.
+
+## Scoped coda — the observer observed
+
+The receiver/aperture becomes an easter-egg trigger only after the visitor has
+moved the Sun. It may be visually quiet, but it remains a real named button,
+keyboard reachable, focus visible, and understandable without hover. Activating
+it launches one finite, interruptible particle transition and swaps to a
+visually distinct editorial "session field". Reduced motion skips the travel
+and cross-fades directly to the same final information.
+
+The coda contains a short sequence of slides/cards built from local facts only:
+
+- what the browser exposed without a permission prompt (viewport, pixel ratio,
+  language/time-zone and colour/motion preferences)
+- what this page observed during this visit (elapsed time, elevation range and
+  change count, input modalities, resize and visibility-change counts)
+- what it deliberately did not request or retain
+- an honest erase-and-return action
+
+No geolocation, camera, microphone, notifications, clipboard, IP lookup,
+cookies, local/session storage, analytics, fingerprint ID, network submission,
+personality inference, or cross-visit comparison. Values are descriptive, not
+claims that the visitor is unique or identifiable. The coda uses a different
+palette and layout, but the conceptual bridge is explicit: an observer never
+receives reality unmediated; the medium decides what becomes visible.
 
 ## Visual direction — production contract
 

@@ -188,9 +188,9 @@ stack or brief:
 ## This cycle's rebuild (Assignment 1)
 
 - `PLAN.md` is the source of truth for this rebuild's scope and its
-  single-mechanic decision --- including that the core explainer works with
-  zero permissions granted and the optional session-trace coda stays out of
-  scope until its own decision gate. If a prompt or a proposed feature
+  single-physics-mechanic decision --- including that the core explainer works
+  with zero permissions granted and the now-approved session-trace coda stays
+  a local-only, same-document reveal. If a prompt or a proposed feature
   conflicts with this, stop and surface the conflict --- don't silently
   resolve it either way. The detailed visual contract lives there too, not
   here; this file carries only the standing rules.
@@ -199,6 +199,14 @@ stack or brief:
 - No new mechanic, permission, or heavy rendering dependency (Canvas, WebGL,
   a 3D or animation library) without an explicit scope or architecture gate
   first --- never as an incidental addition mid-slice.
+- The coda may observe only the ephemeral signals listed in `PLAN.md`. Never
+  add storage, analytics, a fingerprint identifier, raw pointer coordinates,
+  typed content, network submission, or a real sensitive permission request.
+  `Erase this trace` must clear the in-memory summary and return to the Sun.
+- "Hidden" means an easter egg in the visual hierarchy, not inaccessible:
+  the aperture trigger remains a named native button with keyboard access and
+  a visible focus state. The transition must be finite and interruptible, and
+  reduced motion must reach the identical information without particle travel.
 - Visual acceptance needs measured boxes and screenshots from the production
   build, not a source reading. Both marking viewports (1920×1080, 390×844),
   keyboard-only operation, resize mid-use, and reduced-motion parity are

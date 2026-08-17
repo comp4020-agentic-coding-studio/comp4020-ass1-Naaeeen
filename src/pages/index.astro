@@ -157,21 +157,21 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
         <ol>
           <li>
             <span class="model-number">01</span>
-            <strong>Air mass <output data-testid="airmass-value">×{scene.pathAmount.toFixed(1)}</output></strong>
-            <code>m(h) = 1 / (sin h + correction)</code>
-            <small>Low angles cross more atmosphere.</small>
+            <strong>Relative air mass <output data-testid="airmass-value">×{scene.pathAmount.toFixed(1)}</output></strong>
+            <code data-testid="model-equation">m(h) = [sin h + 0.50572(h + 6.07995)<sup>−1.6364</sup>]<sup>−1</sup></code>
+            <small><var>h</var> is apparent elevation, and <var>m</var> is relative air mass. At 10°, the beam crosses about 5.6x as much atmosphere as it does at 90°.</small>
           </li>
           <li>
             <span class="model-number">02</span>
             <strong>Fourth power</strong>
-            <code>scatter ∝ 1 / λ⁴</code>
-            <small>Short blue wavelengths turn aside fastest.</small>
+            <code data-testid="model-equation">τ<sub>R</sub>(λ) ∝ λ<sup>−4</sup></code>
+            <small><var>λ</var> is wavelength. Rayleigh scattering makes 450 nm blue light scatter about 4.4x more strongly than 650 nm red light.</small>
           </li>
           <li>
             <span class="model-number">03</span>
             <strong>What survives</strong>
-            <code>T(λ) = e<sup>−τm/λ⁴</sup></code>
-            <small>The direct beam becomes dimmer and warmer.</small>
+            <code data-testid="model-equation">T(λ,h) = e<sup>−m(h)τ<sub>R</sub>(λ)</sup></code>
+            <small><var>T</var> is transmitted direct light. A longer path removes more blue, so the direct beam arrives dimmer and warmer.</small>
           </li>
         </ol>
       </aside>
@@ -252,7 +252,7 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
       >
 
       <p class="rail-note" data-testid="model-note">
-        Simplified illustration — not a physical simulation.
+        Qualitative atmospheric model — equations are physical approximations; colour is illustrative, not calibrated.
       </p>
     </div>
     <section

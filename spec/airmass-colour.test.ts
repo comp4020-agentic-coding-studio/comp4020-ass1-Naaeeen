@@ -81,6 +81,11 @@ describe("the built page explains the model as cause, maths, and visible result"
     expect(text).toContain("air mass");
     expect(text).toContain("fourth power");
     expect(text).toContain("survives");
+    expect(text).toContain("6.07995");
+    expect(text).toContain("450 nm");
+    expect(text).toContain("650 nm");
+    expect(text).toContain("4.4x");
+    expect(text).toContain("t(λ,h)");
   });
 
   it("shows the spectrum-derived colour as a named visual result", () => {

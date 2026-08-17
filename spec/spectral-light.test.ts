@@ -175,6 +175,19 @@ describe("spectral transmission: what the built page shows", () => {
     }
   });
 
+  it("names the model terms instead of collapsing them into shorthand", () => {
+    const strip = doc.querySelector('[data-testid="airmass-model"]');
+    const text = (strip?.textContent ?? "").replace(/\s+/g, " ").trim().toLowerCase();
+
+    expect(strip, "the three-step model strip should be present").toBeTruthy();
+    expect(text).toContain("apparent elevation");
+    expect(text).toContain("wavelength");
+    expect(text).toContain("transmitted direct light");
+    expect(text).toContain("0.50572");
+    expect(text).toContain("6.07995");
+    expect(text).toContain("1.6364");
+  });
+
   it("still has exactly one control driving one canonical state", () => {
     expect(doc.querySelectorAll('input[type="range"]').length).toBe(1);
     expect(

@@ -1834,6 +1834,27 @@ body {
   }
 }
 
+/* A very short phone (roughly a 568px-tall screen and below) has so little
+   vertical room that the rail's own content pushes the atmosphere field
+   under half the stage, which drags the fixed-percentage observer aperture
+   up into the title column above it. Trim the rail, not the atmosphere. */
+@media (width <= 30rem) and (height <= 40rem) {
+  .rail {
+    gap: 0.35rem;
+    padding-top: 0.5rem;
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+
+  .rail-note {
+    display: none;
+  }
+
+  .rail-output {
+    font-size: 0.76rem;
+    line-height: 1.4;
+  }
+}
+
 /* A 1366x768 laptop is wide but not tall. The normal two-column coda kept its
    desktop spacing after the trace grew, putting the footer below the fold. */
 @media (width >= 60rem) and (height <= 52rem) {

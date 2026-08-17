@@ -1632,10 +1632,30 @@ body {
     transition: background 0.2s ease-out;
   }
 
+  /* Direct manipulation must track the pointer, rather than easing toward
+     a trail of stale states. The resting transitions return after release. */
+  .stage.is-scrubbing .beam-frame,
+  .stage.is-scrubbing .beam-soft,
+  .stage.is-scrubbing .beam-core,
+  .stage.is-scrubbing .atmos-path,
+  .stage.is-scrubbing .transmitted,
+  .stage.is-scrubbing .scatter-mark,
+  .stage.is-scrubbing .haze,
+  .stage.is-scrubbing .air-shell,
+  .stage.is-scrubbing .packet,
+  .stage.is-scrubbing .receiver-iris,
+  .stage.is-scrubbing .receiver-core,
+  .stage.is-scrubbing .arrival-band-fill,
+  .stage.is-scrubbing .scene-label-scatter,
+  .stage.is-scrubbing .atmosphere,
+  .stage.is-scrubbing .sun-disc,
+  .stage.is-scrubbing .sun-bloom {
+    transition: none;
+  }
+
   /* The explanatory pulse: one run, on settle only, driven by a class the
-     script adds and removes. Every keyframe animates transform or opacity,
-     and the end state is the resting state, so nothing is left displaced if
-     the pulse is cancelled mid-flight. */
+     script adds and removes. It may highlight the current state, but never
+     invents a different geometric starting state. */
   .stage.is-pulsing .atmos-path {
     animation: path-emphasis 620ms ease-in-out both;
   }
@@ -1669,10 +1689,11 @@ body {
     }
   }
 
-  /* Starts up at the Sun end of the crossing and arrives where it rests. */
+  /* Light feedback fades in where the current model placed it; it never
+     jumps back to an invented origin after the slider changes. */
   @keyframes packet-run {
     0% {
-      translate: calc((1 - var(--along)) * var(--path-len, 30) * var(--u)) 0;
+      translate: var(--rest-x, 0) var(--rest-y, 0);
       opacity: 0;
     }
 
@@ -1705,11 +1726,11 @@ body {
 
   @keyframes band-settle {
     0% {
-      scale: 1 0.06;
+      opacity: 0.58;
     }
 
     100% {
-      scale: 1 var(--band-t, 0.6);
+      opacity: 1;
     }
   }
 }

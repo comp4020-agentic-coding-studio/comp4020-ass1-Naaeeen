@@ -351,6 +351,7 @@ function init(): void {
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   let settleTimer = 0;
   let pulseFrame = 0;
+  let pointerScrubbing = false;
 
   // Scrubbing updates state and nothing else: geometry and colour follow the
   // slider with no queued animation in the way.
@@ -385,17 +386,35 @@ function init(): void {
     });
   };
 
+  const beginScrub = (): void => {
+    pointerScrubbing = true;
+    stopPulse();
+    scene.classList.add("is-scrubbing");
+  };
+
+  const endScrub = (): void => {
+    if (!pointerScrubbing) return;
+    pointerScrubbing = false;
+    scene.classList.remove("is-scrubbing");
+    stopPulse();
+    settleTimer = window.setTimeout(pulse, SETTLE_MS);
+  };
+
+  range.addEventListener("pointerdown", beginScrub);
+  window.addEventListener("pointerup", endScrub);
+  window.addEventListener("pointercancel", endScrub);
+
   range.addEventListener("input", () => {
     render();
     stopPulse();
-    settleTimer = window.setTimeout(pulse, SETTLE_MS);
+    if (!pointerScrubbing) settleTimer = window.setTimeout(pulse, SETTLE_MS);
   });
 
-  // Drag end / key release: explain straight away rather than waiting out the
-  // settle window.
+  // Drag end / key release: explain once, without restarting geometry while a
+  // pointer is still scrubbing the control.
   range.addEventListener("change", () => {
     render();
-    pulse();
+    if (!pointerScrubbing) pulse();
   });
 
   // Nothing should keep animating for a tab nobody is looking at.

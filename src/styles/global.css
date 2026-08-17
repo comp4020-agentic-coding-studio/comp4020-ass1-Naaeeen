@@ -618,8 +618,20 @@ body {
 
 @media (width >= 90rem) {
   .model-strip {
-    inset: auto clamp(2.4rem, 4vw, 4rem) 17% auto;
-    width: min(56rem, 46vw);
+    inset: auto clamp(2.4rem, 4vw, 4rem) 12% auto;
+    width: min(48rem, 40vw);
+    padding: clamp(0.8rem, 1vw, 1rem);
+  }
+
+  .model-strip small {
+    font-size: clamp(0.82rem, 0.82vw, 0.94rem);
+    line-height: 1.34;
+  }
+
+  .horizon-reveal {
+    top: clamp(4.5rem, 10%, 7.5rem);
+    left: 52%;
+    width: min(40rem, 36vw);
   }
 
   .received-colour {
@@ -633,9 +645,9 @@ body {
 .horizon-reveal {
   position: absolute;
   z-index: 4;
-  top: 29%;
+  top: clamp(8rem, 29%, 14rem);
   left: 50%;
-  width: min(32rem, 82vw);
+  width: min(38rem, 82vw);
   translate: -50% calc((1 - var(--horizon-reveal, 0)) * 1rem);
   text-align: center;
   text-shadow: 0 2px 18px rgb(68 24 8 / 38%);
@@ -645,7 +657,7 @@ body {
 
 .horizon-reveal p {
   margin: 0;
-  font-size: clamp(1.7rem, 5.2vw, 5.4rem);
+  font-size: clamp(1.5rem, 3.8vw, 3.4rem);
   font-weight: 720;
   line-height: 0.95;
   letter-spacing: -0.055em;
@@ -663,8 +675,9 @@ body {
 
 @media (width >= 60rem) {
   .horizon-reveal {
-    top: 21%;
-    width: min(58rem, 58vw);
+    top: clamp(4.5rem, 11%, 7.5rem);
+    left: 52%;
+    width: min(38rem, 38vw);
   }
 }
 
@@ -709,9 +722,12 @@ body {
   }
 
   .received-colour {
-    max-width: 7rem;
+    inset: auto clamp(0.75rem, 3vw, 1.25rem) clamp(1rem, 15%, 5rem) auto;
+    align-items: flex-end;
+    max-width: 7.5rem;
     gap: 0.35rem;
-    translate: calc(4.7 * var(--u)) calc(2.8 * var(--u));
+    translate: none;
+    text-align: right;
   }
 
   .received-swatch {
@@ -732,7 +748,8 @@ body {
   }
 
   .horizon-reveal {
-    top: 38%;
+    top: clamp(10rem, 38%, 14rem);
+    width: min(30rem, 86vw);
   }
 }
 
@@ -1828,6 +1845,12 @@ body {
   .model-strip {
     right: clamp(1.5rem, 2.5vw, 2.25rem);
     width: min(40rem, 37vw);
+  }
+
+  .model-kicker,
+  .model-number,
+  .model-strip small {
+    display: none;
   }
 
   .coda-header {

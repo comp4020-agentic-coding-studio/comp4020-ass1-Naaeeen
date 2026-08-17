@@ -18,6 +18,6 @@ describe("responsive layout: viewport-specific composition", () => {
   });
 
   it("keeps a separate wide-screen rule for the expanded science strip", () => {
-    expect(css).toMatch(/@media \(width >= 90rem\) \{[\s\S]*\.model-strip\s*\{[\s\S]*width:\s*min\(56rem, 46vw\);/);
+    expect(css).toMatch(/@media \(width >= 90rem\) \{[\s\S]*\.model-strip\s*\{[\s\S]*width:\s*min\(48rem, 40vw\);/);
   });
 });

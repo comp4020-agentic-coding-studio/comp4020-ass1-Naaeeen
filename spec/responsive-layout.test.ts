@@ -9,8 +9,8 @@ describe("responsive layout: viewport-specific composition", () => {
     expect(css).toMatch(/\.rail\s*\{[\s\S]*width:\s*min\(100%, 80rem\);[\s\S]*margin-inline:\s*auto;/);
   });
 
-  it("ships a dedicated phone breakpoint for the science strip and received-colour witness", () => {
-    expect(css).toMatch(/@media \(width < 44rem\) \{[\s\S]*\.model-strip\s*\{[\s\S]*left:\s*0\.75rem;[\s\S]*width:\s*auto;[\s\S]*\}[\s\S]*\.received-colour\s*\{[\s\S]*max-width:\s*7rem;/);
+  it("keeps the narrow science strip clear of the title across phone widths", () => {
+    expect(css).toMatch(/@media \(width < 44rem\) \{[\s\S]*\.model-strip\s*\{[\s\S]*left:\s*auto;[\s\S]*width:\s*min\(11rem, 46vw\);[\s\S]*\}[\s\S]*\.model-strip ol\s*\{[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\);/);
   });
 
   it("ships a middle breakpoint so tablet widths do not reuse phone or wide-desktop positions", () => {

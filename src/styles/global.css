@@ -670,11 +670,11 @@ body {
 
 @media (width < 44rem) {
   .model-strip {
-    top: 4.65rem;
+    top: 0.75rem;
     right: 0.75rem;
-    left: 0.75rem;
-    width: auto;
-    padding: 0.72rem 0.8rem;
+    left: auto;
+    width: min(11rem, 46vw);
+    padding: 0.58rem 0.64rem;
   }
 
   .model-kicker {
@@ -686,8 +686,8 @@ body {
   }
 
   .model-strip ol {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.45rem;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.28rem;
   }
 
   .model-strip li {
@@ -695,13 +695,13 @@ body {
   }
 
   .model-strip strong {
-    font-size: 0.76rem;
+    font-size: 0.68rem;
   }
 
   .model-strip code {
     margin-top: 0.08rem;
-    font-size: 0.56rem;
-    line-height: 1.22;
+    font-size: 0.51rem;
+    line-height: 1.2;
   }
 
   .model-strip small {

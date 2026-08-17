@@ -6,6 +6,18 @@ interface SessionTrace {
   readonly modes: readonly string[];
   readonly resizes: number;
   readonly visibilityChanges: number;
+  readonly pointerMoves: number;
+  readonly clicks: number;
+  readonly keyPresses: number;
+}
+
+interface BrowserHints extends Navigator {
+  readonly connection?: {
+    readonly effectiveType?: string;
+    readonly saveData?: boolean;
+  };
+  readonly deviceMemory?: number;
+  readonly globalPrivacyControl?: boolean;
 }
 
 const range = document.querySelector<HTMLInputElement>("#elevation");
@@ -33,6 +45,9 @@ function initialTrace(elevation: number): SessionTrace {
     modes: [],
     resizes: 0,
     visibilityChanges: 0,
+    pointerMoves: 0,
+    clicks: 0,
+    keyPresses: 0,
   };
 }
 
@@ -54,16 +69,48 @@ function displayPreference(): string {
   return motion + " · " + contrast;
 }
 
+function languageStack(): string {
+  const stack = navigator.languages?.filter(Boolean) ?? [];
+  return stack.length > 0 ? stack.slice(0, 4).join(" · ") : "not exposed";
+}
+
+function connectionHint(): string {
+  const browser = navigator as BrowserHints;
+  const connection = browser.connection;
+  if (!connection) return "not exposed";
+  const parts = [connection.effectiveType, connection.saveData ? "save-data on" : "save-data off"]
+    .filter(Boolean);
+  return parts.length > 0 ? parts.join(" · ") : "not exposed";
+}
+
+function privacySignals(): string {
+  const browser = navigator as BrowserHints;
+  const gpc = browser.globalPrivacyControl === true ? "GPC on" : "GPC off";
+  const dnt = navigator.doNotTrack === "1" ? "DNT on" : "DNT off";
+  return gpc + " · " + dnt;
+}
+
 function renderTrace(trace: SessionTrace): void {
   const seconds = Math.max(1, Math.round((performance.now() - trace.startedAt) / 1000));
   put("elapsed", seconds + (seconds === 1 ? " second" : " seconds"));
   put("moves", String(trace.moves));
   put("range", Math.round(trace.minElevation) + "° → " + Math.round(trace.maxElevation) + "°");
   put("modes", trace.modes.length > 0 ? trace.modes.join(" + ") : "none yet");
+  put("pointer-moves", String(trace.pointerMoves));
+  put("clicks", String(trace.clicks));
+  put("keys", String(trace.keyPresses));
   put("viewport", innerWidth + " × " + innerHeight);
   put("pixels", devicePixelRatio.toFixed(2) + "×");
   put("language", navigator.language || "not exposed");
+  put("languages", languageStack());
   put("timezone", Intl.DateTimeFormat().resolvedOptions().timeZone || "not exposed");
+  put("colour-depth", String(screen.colorDepth) + "-bit");
+  put("touch", String(navigator.maxTouchPoints ?? 0));
+  put("cores", navigator.hardwareConcurrency ? navigator.hardwareConcurrency + " logical cores" : "not exposed");
+  const browser = navigator as BrowserHints;
+  put("memory", browser.deviceMemory ? browser.deviceMemory + " GB bucket" : "not exposed");
+  put("connection", connectionHint());
+  put("privacy", privacySignals());
   put("display", displayPreference());
   put("resizes", String(trace.resizes));
   put("visibility", String(trace.visibilityChanges));
@@ -158,6 +205,12 @@ function initialise(): void {
   window.addEventListener("resize", () => {
     trace = { ...trace, resizes: trace.resizes + 1 };
   });
+  window.addEventListener("pointermove", () => {
+    trace = { ...trace, pointerMoves: trace.pointerMoves + 1 };
+  }, { passive: true });
+  document.addEventListener("click", () => {
+    trace = { ...trace, clicks: trace.clicks + 1 };
+  }, { capture: true });
   document.addEventListener("visibilitychange", () => {
     trace = { ...trace, visibilityChanges: trace.visibilityChanges + 1 };
     if (document.hidden) stage.classList.remove("is-portal-opening");
@@ -173,6 +226,7 @@ function initialise(): void {
   returnButton?.addEventListener("click", () => closeCoda(false));
   eraseButton?.addEventListener("click", () => closeCoda(true));
   document.addEventListener("keydown", (event) => {
+    trace = { ...trace, keyPresses: trace.keyPresses + 1 };
     if (event.key === "Escape" && !coda.hidden) closeCoda(false);
   });
 

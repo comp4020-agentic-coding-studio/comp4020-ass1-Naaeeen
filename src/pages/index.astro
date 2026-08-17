@@ -303,6 +303,9 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
             <dl class="trace-facts">
               <div><dt>range explored</dt><dd data-trace="range">45° → 45°</dd></div>
               <div><dt>input modes</dt><dd data-trace="modes">none yet</dd></div>
+              <div><dt>pointer moves</dt><dd data-trace="pointer-moves">0</dd></div>
+              <div><dt>clicks</dt><dd data-trace="clicks">0</dd></div>
+              <div><dt>key presses</dt><dd data-trace="keys">0</dd></div>
             </dl>
           </article>
 
@@ -313,9 +316,19 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
               <div><dt>viewport</dt><dd data-trace="viewport">—</dd></div>
               <div><dt>pixel ratio</dt><dd data-trace="pixels">—</dd></div>
               <div><dt>language</dt><dd data-trace="language">—</dd></div>
+              <div><dt>language stack</dt><dd data-trace="languages">—</dd></div>
               <div><dt>time zone</dt><dd data-trace="timezone">—</dd></div>
+              <div><dt>colour depth</dt><dd data-trace="colour-depth">—</dd></div>
+              <div><dt>touch points</dt><dd data-trace="touch">—</dd></div>
+              <div><dt>CPU hint</dt><dd data-trace="cores">—</dd></div>
+              <div><dt>memory hint</dt><dd data-trace="memory">—</dd></div>
+              <div><dt>connection hint</dt><dd data-trace="connection">—</dd></div>
+              <div><dt>privacy signals</dt><dd data-trace="privacy">—</dd></div>
               <div><dt>display preference</dt><dd data-trace="display">—</dd></div>
             </dl>
+            <p class="trace-copy">
+              Most of these are coarse browser hints, not account data. They are still enough to narrow down what kind of device and context is visiting.
+            </p>
           </article>
 
           <article class="trace-card trace-card-zero" data-testid="trace-card" data-trace-card="3" hidden>

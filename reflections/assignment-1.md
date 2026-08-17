@@ -1,0 +1,9 @@
+# Assignment 1 reflection
+
+The moment that changed the project was the green sky. The page worked and the checks were green, but the result was obviously wrong. My first instinct was to ask the agent for better colours. Instead, I stopped implementation and asked a research agent to find a model it could defend with primary sources, including its assumptions and limits. That led to the Kasten–Young air-mass approximation and a wavelength-dependent transmission model.
+
+I kept research and implementation separate after that. The implementation agent could not change the tests. One test calculates the reference curve independently; others check the direction of change across the slider instead of matching one “correct” screenshot. Lowering the Sun must mean more atmosphere, less transmitted light and a warmer received beam. I later learned this is close to metamorphic testing. It suited the problem because the screen colour is illustrative, but the physical relationships should still hold.
+
+The same lesson shaped the privacy coda. I had considered real permission prompts because they would make the reveal more dramatic. Before writing it, I ruled out camera, location, storage, analytics and network submission. The observer aperture now opens a local session trace, and erasing or reloading removes it. A test checks that the forbidden browser APIs never entered the implementation.
+
+I used to think directing an agent mostly meant writing a detailed prompt and inspecting the result. Now I think the harder job is deciding what evidence could prove a plausible result wrong. Sources, automated checks, the real browser and my own judgement answer different questions. I want important corrections to survive the chat, so the next agent starts from a better standard instead of repeating the same mistake.

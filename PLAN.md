@@ -335,12 +335,12 @@ or built-HTML check is never presented as proof of rendered behaviour.
 
 Completed:
 
-1. `docs: lock the A1 rebuild plan` — done, `4dc56a6`.
-2. `harness: tighten A1 rules and verification` — done, `4f854e3`.
+1. `docs: lock the A1 rebuild plan` — done, `3bab5a3`.
+2. `harness: tighten A1 rules and verification` — done, `bf182b1`.
 3. `spec: state the Assignment 1 sun-elevation contract as a failing test` —
-   done, `25b9e08`; the one allowed deliberately-red commit.
+   done, `24833be`; the one allowed deliberately-red commit.
 4. `feat: the explainer, drivable and green against its own spec` — done,
-   `ac25f45`; functional baseline, colour regression fixed, full suite green.
+   `d4a29d7`; functional baseline, colour regression fixed, full suite green.
 
 Remaining:
 

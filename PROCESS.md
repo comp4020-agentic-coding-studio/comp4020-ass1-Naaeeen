@@ -1,83 +1,27 @@
 # Process overview
 
-<!-- TEMPLATE: this file is a shape to fill in, not a form. Replace everything
-     in it with your own overview, and delete this comment — `pnpm
-     check:evidence` will remind you if it's still here. -->
-
-A reading-guide to how the work came together --- a map to your process, not an
-essay about it. Markers read this file and follow its citations; they don't
-trawl the repo for evidence you didn't point at, so if a moment mattered, cite
-it.
-
-This file is the shape; the course site's
-[assessment page](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/topics/assessment/#what-you-submit)
-is the requirement, and each brief adds its own word count and moment count.
-
 ## What I built
 
-One paragraph: the thing, and the idea behind it.
+*The Sun Never Turned Red* is a single-page interactive explainer about why sunsets look warm. The visitor moves one Sun-elevation slider; that value changes the Sun’s position, the length of its path through the atmosphere, which wavelengths survive, the colour reaching the observer, and the explanation on screen. It is a static client-side build, usable by mouse, touch and keyboard. A local-only coda turns the observer around and shows what this visit exposed without requesting permissions, saving data or contacting a server.
 
 ## The moments that mattered
 
-Three or four for an assignment; fewer is fine for a weekly prototype. Keep the
-list short so each moment has room to do all four jobs:
+### 1. I turned “this feels like a form” into rules the agent could not ignore
 
-1. **what happened** --- the problem, or the thing the agent got wrong
-2. **what you did instead of the obvious thing** --- the call you made, and why
-   it beat the obvious one
-3. **how you knew it was right** --- the check you ran, the viewport you looked
-   at, what you read before accepting the diff
-4. **the citation** --- a commit or commit range, a `CLAUDE.md` change, a check
-   that went from red to green, a prompt paired with the commit it produced
+The first working version was a small 640 × 226 illustration surrounded by empty space. Asking the agent to “make it prettier” would have produced another subjective retry. I changed the harness instead. `PLAN.md` and `CLAUDE.md` began requiring a viewport-scale stage, separately named atmosphere and control regions, minimum desktop and phone proportions, overflow tolerances, a 44-pixel control target, and a rule that visual work could not be accepted unseen. A structural test checked that the pieces and their accessible roles existed, but deliberately did not pretend to measure layout. I accepted the new composition only after checking the production build at 1920 × 1080 and 390 × 844 for size, overflow, collisions, keyboard/touch behaviour and reduced motion.
 
-Jobs 2 and 3 are the ones the repo can't tell a reader on its own, so they're
-where the marks are. The strongest moments are the ones where a correction
-landed in the **harness** rather than in another prompt --- a rule added to
-`CLAUDE.md`, a check wired up, an attempt thrown away: re-prompting until it
-passes is the routine case, and changing what the agent works against is the
-skilled one.
+Evidence: [bf134ca](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-Naaeeen/commit/bf134cabe528d45f1491682eec8f246ef31c170f) and [937e09b](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-Naaeeen/commit/937e09b005647aafcba7ac5ca4e7a977291cb6fd).
 
-Cite each moment as a link whose text is the commit hash or range and whose
-target is this repo's commit or compare URL, so a reader clicks straight to the
-evidence:
+### 2. I stopped the agent from making the physics look convincing before it was defensible
 
-- one commit: [`a1b2c3d`](https://github.com/YOUR-ORG/YOUR-REPO/commit/a1b2c3d)
-- a range:
-  [`a1b2c3d...e4f5a6b`](https://github.com/YOUR-ORG/YOUR-REPO/compare/a1b2c3d...e4f5a6b)
+An early colour rule rotated around the HSL colour wheel. Halfway through the slider it produced a green sky, and near the top it could make the Sun blue. Instead of requesting another plausible adjustment, I stopped implementation and gave a research agent a narrower job: use primary sources, compare atmospheric models, state every assumption and limitation, and leave gaps unresolved rather than inventing an answer. That led to the Kasten–Young approximation for relative air mass and a wavelength-dependent transmission model.
 
-To pair a prompt with the commit it produced, quote the prompt (curated, not a
-full transcript) next to the citation:
+A separate implementation pass then worked against tests it could not weaken. The test calculates the reference air-mass curve independently rather than importing the function it judges. It also checks relationships across every slider degree: lowering the Sun must increase air mass, reduce transmission and make the received beam warmer. This is closer to metamorphic testing than screenshot matching: when no exact colour is available as an oracle, the test checks how outputs must change together. Finally, the page defines its symbols and states that the equations are physical approximations while the displayed colour is illustrative, not calibrated.
 
-> the prompt, verbatim
+Evidence: [d4a29d7](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-Naaeeen/commit/d4a29d7b4d1e80b5ca33b779bfcc3e9695d7cef1), [c4a3026](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-Naaeeen/commit/c4a3026b6e7bac9a4cc919ac4b27d661a5906ed8) and [213964f](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-Naaeeen/commit/213964f09d1e4b34a475535bf2ceba2045faf5d8).
 
-Screenshots are welcome where one carries the verification better than a
-sentence does. Commit the file to this repo and link it with a **relative**
-path, which is what makes it render on GitHub: `![alt text](docs/before.png)`.
-Images don't count towards the word count and don't replace the citation.
+### 3. I constrained the privacy reveal before allowing the agent to build it
 
-### A worked moment, for shape
+The dramatic option was to request camera, location or notification access and make the reveal feel more personal. That would have turned a teaching moment into real data collection. Before implementation, I added a capability boundary to `PLAN.md` and `CLAUDE.md`: no sensitive permissions, storage, cookies, analytics, fingerprint identifier, typed content or network submission. The observer aperture became an accessible gateway into four cards built only from ephemeral session facts such as elapsed time, slider use, viewport and display preferences. A negative test searches the source for forbidden browser APIs, while the visible erase action resets the in-memory summary. Reloading removes it as well. The constraint therefore survives later prompts instead of depending on the agent remembering a conversation.
 
-Delete this section along with the rest of the boilerplate --- it's here to show
-the four jobs in one paragraph, not to be imitated in content.
-
-> The date formatter kept coming back with `toLocaleDateString()` and no locale
-> argument, so the same build rendered differently on my machine and in CI. I'd
-> already re-prompted it twice, which fixed the line but not the habit, so the
-> third time I put the rule in `CLAUDE.md` instead
-> ([`3f9ac21`](https://github.com/YOUR-ORG/YOUR-REPO/commit/3f9ac21)) and added
-> a spec test that fails on a bare `toLocaleDateString`. That's what told me it
-> had actually taken: the test went red against the old code and green against
-> the new, and the next two features it wrote passed it without prompting
-> ([`3f9ac21...b7e0d14`](https://github.com/YOUR-ORG/YOUR-REPO/compare/3f9ac21...b7e0d14)).
-
-## Before you ship
-
-`pnpm check:evidence` verifies your citations resolve to real commits, that the
-current reflection entry is in `reflections/`, and that your `CLAUDE.md` is
-there --- before a marker ever opens the file. It checks that your map is
-traceable, not that it is good: the marker judges whether your small,
-deliberately chosen set of moments shows real judgement and reflection. A green
-check is not a substitute for that curation.
-
-Images are deliberately not checked, because whether one renders is visible the
-moment you look. Open this file on GitHub and look at it before you ship.
+Evidence: [7e9ee5](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-Naaeeen/commit/7e9ee5e2f92bf363d4ba04f2b0013fd11dc081c9) and [58d0471](https://github.com/comp4020-agentic-coding-studio/comp4020-ass1-Naaeeen/commit/58d0471be421725217cec1e6cb845d7729b9e76e).

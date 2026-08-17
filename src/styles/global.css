@@ -616,6 +616,18 @@ body {
   }
 }
 
+@media (width >= 90rem) {
+  .model-strip {
+    inset: auto clamp(2.4rem, 4vw, 4rem) 17% auto;
+    width: min(56rem, 46vw);
+  }
+
+  .received-colour {
+    max-width: 13rem;
+    translate: calc(7.4 * var(--u)) calc(2.25 * var(--u));
+  }
+}
+
 /* ---- final near-horizon reveal --------------------------------------- */
 
 .horizon-reveal {
@@ -656,12 +668,13 @@ body {
   }
 }
 
-@media (width < 60rem) {
+@media (width < 44rem) {
   .model-strip {
-    top: 1rem;
-    right: 1rem;
-    width: min(12rem, 50vw);
-    padding: 0.62rem 0.68rem;
+    top: 4.65rem;
+    right: 0.75rem;
+    left: 0.75rem;
+    width: auto;
+    padding: 0.72rem 0.8rem;
   }
 
   .model-kicker {
@@ -673,8 +686,8 @@ body {
   }
 
   .model-strip ol {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.3rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.45rem;
   }
 
   .model-strip li {
@@ -682,12 +695,12 @@ body {
   }
 
   .model-strip strong {
-    font-size: 0.72rem;
+    font-size: 0.76rem;
   }
 
   .model-strip code {
     margin-top: 0.08rem;
-    font-size: 0.54rem;
+    font-size: 0.56rem;
     line-height: 1.22;
   }
 
@@ -695,8 +708,71 @@ body {
     display: none;
   }
 
+  .received-colour {
+    max-width: 7rem;
+    gap: 0.35rem;
+    translate: calc(4.7 * var(--u)) calc(2.8 * var(--u));
+  }
+
+  .received-swatch {
+    width: clamp(1.5rem, 7vw, 2.55rem);
+  }
+
+  .received-colour small {
+    font-size: 0.46rem;
+  }
+
+  .received-colour strong {
+    font-size: 0.6rem;
+  }
+
+  .rail-output {
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+
   .horizon-reveal {
     top: 38%;
+  }
+}
+
+@media (width >= 44rem) and (width < 78rem) {
+  .received-colour {
+    max-width: 9.75rem;
+    translate: calc(5.8 * var(--u)) calc(2.35 * var(--u));
+  }
+
+  .model-strip {
+    top: 1.15rem;
+    right: 1.15rem;
+    left: auto;
+    width: min(17rem, 33vw);
+    padding: 0.76rem 0.82rem;
+  }
+
+  .model-strip ol {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.36rem;
+  }
+
+  .model-kicker,
+  .model-number,
+  .model-strip small {
+    display: none;
+  }
+
+  .model-strip strong {
+    font-size: 0.9rem;
+  }
+
+  .model-strip code {
+    font-size: 0.68rem;
+    line-height: 1.28;
+  }
+
+  .horizon-reveal {
+    top: 33%;
+    width: min(28rem, 62vw);
   }
 }
 
@@ -812,6 +888,8 @@ body {
   /* Explicit so every child can shrink below its min-content width instead of
      widening the grid and overflowing a narrow viewport. */
   grid-template-columns: minmax(0, 1fr);
+  width: min(100%, 80rem);
+  margin-inline: auto;
   gap: 0.55rem clamp(1.5rem, 3vw, 3rem);
   padding: clamp(0.7rem, 1.5vh, 1.25rem) clamp(1rem, 3vw, 3rem);
   padding-bottom: max(clamp(0.7rem, 1.5vh, 1.25rem), env(safe-area-inset-bottom));
@@ -1585,6 +1663,239 @@ body {
 
   .coda-footer button {
     min-width: 0;
+  }
+}
+
+/* The expanded trace needs a true phone composition rather than the generic
+   narrow layout above. Keep the complete experience in one viewport at the
+   marking size, while preserving 44px controls and readable signal values. */
+@media (width <= 30rem) {
+  .rail {
+    gap: 0.45rem;
+    padding-right: max(0.875rem, env(safe-area-inset-right));
+    padding-left: max(0.875rem, env(safe-area-inset-left));
+  }
+
+  .model-strip {
+    top: 0.75rem;
+    right: 0.75rem;
+    left: auto;
+    width: min(11rem, 46vw);
+    padding: 0.58rem 0.64rem;
+  }
+
+  .model-strip ol {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.28rem;
+  }
+
+  .model-strip strong {
+    font-size: 0.68rem;
+  }
+
+  .model-strip code {
+    font-size: 0.51rem;
+    line-height: 1.2;
+  }
+
+  .rail-control {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0 0.7rem;
+  }
+
+  .rail-control label {
+    grid-column: 1 / -1;
+  }
+
+  .rail input[type="range"] {
+    grid-row: 2;
+    grid-column: 1;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .rail-value {
+    grid-row: 2;
+    grid-column: 2;
+    align-self: center;
+  }
+
+  .rail-output,
+  .rail-note {
+    overflow-wrap: anywhere;
+  }
+
+  .coda-shell {
+    gap: 0.55rem;
+    padding: max(0.75rem, env(safe-area-inset-top))
+      max(0.75rem, env(safe-area-inset-right))
+      max(0.75rem, env(safe-area-inset-bottom))
+      max(0.75rem, env(safe-area-inset-left));
+  }
+
+  .coda-header {
+    padding-bottom: 0.45rem;
+  }
+
+  .coda-intro h2 {
+    max-width: 14ch;
+    margin-top: 0.25rem;
+    font-size: clamp(1.85rem, 8.6vw, 2.4rem);
+    line-height: 0.94;
+  }
+
+  .coda-lede {
+    margin-top: 0.4rem;
+    font-size: 0.7rem;
+    line-height: 1.3;
+  }
+
+  .coda-boundary {
+    margin-top: 0.35rem;
+    padding-top: 0.35rem;
+    font-size: 0.52rem;
+    line-height: 1.25;
+  }
+
+  .trace-deck {
+    padding-top: 0.5rem;
+  }
+
+  .trace-card {
+    min-height: 0;
+    padding: 0.7rem 0.8rem;
+  }
+
+  .trace-card h3 {
+    max-width: none;
+    margin-top: 0.3rem;
+    font-size: 1rem;
+  }
+
+  .trace-facts-wide {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.28rem 0.4rem;
+    margin-top: 0.45rem;
+  }
+
+  .trace-card[data-trace-card="2"] .trace-facts div {
+    padding-top: 0.35rem;
+  }
+
+  .trace-card[data-trace-card="2"] .trace-facts dt {
+    font-size: 0.42rem;
+    letter-spacing: 0.05em;
+  }
+
+  .trace-card[data-trace-card="2"] .trace-facts dd {
+    margin-top: 0.15rem;
+    font-size: 0.64rem;
+    line-height: 1.1;
+  }
+
+  .trace-card[data-trace-card="2"] .trace-copy {
+    margin-top: 0.45rem;
+    font-size: 0.62rem;
+    line-height: 1.25;
+  }
+
+  .trace-nav {
+    gap: 0.5rem;
+    margin-top: 0.4rem;
+  }
+
+  .trace-nav button,
+  .coda-footer button {
+    font-size: 0.6rem;
+  }
+
+  .coda-footer {
+    gap: 0.5rem;
+    padding-top: 0;
+  }
+}
+
+/* A 1366x768 laptop is wide but not tall. The normal two-column coda kept its
+   desktop spacing after the trace grew, putting the footer below the fold. */
+@media (width >= 60rem) and (height <= 52rem) {
+  .coda-shell {
+    gap: clamp(0.65rem, 1.7vh, 1rem);
+    padding: clamp(1rem, 2vw, 1.5rem);
+  }
+
+  .model-strip {
+    right: clamp(1.5rem, 2.5vw, 2.25rem);
+    width: min(40rem, 37vw);
+  }
+
+  .coda-header {
+    padding-bottom: 0.5rem;
+  }
+
+  .coda-intro h2 {
+    font-size: clamp(2.6rem, 4.4vw, 4.4rem);
+    line-height: 0.9;
+  }
+
+  .coda-lede {
+    margin-top: 0.8rem;
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+
+  .coda-boundary {
+    margin-top: 0.7rem;
+    padding-top: 0.55rem;
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
+
+  .trace-card {
+    min-height: 0;
+    padding: 1rem 1.25rem;
+  }
+
+  .trace-card h3 {
+    margin-top: 0.45rem;
+    font-size: clamp(1.15rem, 2vw, 1.8rem);
+  }
+
+  .trace-card[data-trace-card="2"] {
+    justify-content: flex-start;
+  }
+
+  .trace-facts-wide {
+    gap: 0.35rem 0.65rem;
+    margin-top: 0.6rem;
+  }
+
+  .trace-card[data-trace-card="2"] .trace-facts div {
+    padding-top: 0.4rem;
+  }
+
+  .trace-card[data-trace-card="2"] .trace-facts dt {
+    font-size: 0.54rem;
+  }
+
+  .trace-card[data-trace-card="2"] .trace-facts dd {
+    margin-top: 0.2rem;
+    font-size: 0.8rem;
+  }
+
+  .trace-card[data-trace-card="2"] .trace-copy {
+    margin-top: 0.5rem;
+    font-size: 0.7rem;
+    line-height: 1.35;
+  }
+
+  .trace-nav {
+    margin-top: 0.45rem;
+  }
+
+  .coda-footer {
+    padding-top: 0;
   }
 }
 

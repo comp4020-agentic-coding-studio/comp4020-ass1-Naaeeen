@@ -1081,12 +1081,14 @@ a {
 
   .simulation-pane {
     display: grid;
-    grid-template-rows: auto minmax(15.5rem, 1fr) auto;
+    grid-template-rows: max-content minmax(0, 1fr) max-content;
+    row-gap: clamp(0.65rem, 1.4vh, 0.95rem);
     height: calc(100dvh - clamp(1.5rem, 3.4vh, 2.3rem));
   }
 
   .hero-copy {
-    margin-bottom: clamp(0.55rem, 1.4vh, 0.9rem);
+    min-height: max-content;
+    margin-bottom: 0;
   }
 
   .hero-copy nav {
@@ -1100,15 +1102,15 @@ a {
   .bench-wrap {
     width: 100%;
     max-width: 100%;
-    height: auto;
+    height: 100%;
     min-height: 0;
-    aspect-ratio: 5 / 3;
-    place-self: center;
+    aspect-ratio: auto;
+    place-self: stretch;
     background: var(--sky-color);
   }
 
   .sun-control {
-    margin-top: 0.65rem;
+    margin-top: 0;
     padding: 0.65rem 0.9rem;
   }
 

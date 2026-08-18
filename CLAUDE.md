@@ -313,6 +313,10 @@ These rules supersede earlier responsive-rescue notes if they conflict.
   remains in normal document flow. Do not create a nested primary-content
   scroller or pin Current observation inside the reading panel. At the top of
   the page, the slider and live observation must still be visible together.
+- In the short-screen simulation grid, the title and control rows must not
+  shrink; only the optical-bench row absorbs lost height. The wrapper may
+  relax its box aspect ratio because the inline SVG preserves its own 5:3
+  viewBox without distorting the physics geometry.
 - The received-colour marker needs a visible plain-language label at every
   breakpoint; never leave the swatch as an unexplained decorative ball.
 - Critical copy, the SVG scene, the control, and the three equations are

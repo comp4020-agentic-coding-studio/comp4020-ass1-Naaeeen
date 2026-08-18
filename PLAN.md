@@ -146,6 +146,56 @@ Every threshold below is measured on the named element's
 an acceptance hook for checkpoint 6 — it does not exist yet and is not added
 in this checkpoint.
 
+### Responsive rescue contract
+
+The current branch already proves the science and interaction, but the layout
+still fails under real viewport variation because too many narrative elements
+share one absolute-positioned stage. The rescue is structural, not a round of
+coordinate nudges.
+
+Rules for this rescue:
+
+- Breakpoints follow content pressure, not device labels. The browser matrix is
+  evidence only; it is not the source of the breakpoint values.
+- Absolute positioning is for illustration geometry only: Sun, beam, path,
+  packets, aperture, and horizon. Narrative/UI blocks must live in normal grid
+  or flex flow.
+- The title block, model explanation, arrival spectrum, slider rail, and
+  written explanation may overlap the artwork visually, but they may not share
+  the same collision domain. Each needs its own layout container.
+- Desktop polish may use staged overlap and negative space. Phone and narrow
+  portrait layouts must degrade to a readable single-column reading path rather
+  than trying to preserve the desktop composition.
+- No horizontal scrolling for reading the page's text or operating the control.
+- Fluid sizing must be bounded. Large text, panels, and scene objects use
+  clamp()/min()/max() or equivalent bounds rather than raw viewport-sized
+  growth.
+- Viewport-height units are for the stage and scene envelope only. Text blocks
+  and explanatory panels are not sized directly from viewport height.
+- Hover-only affordances are optional polish. Every essential control and
+  reveal remains legible and operable for coarse pointers and keyboard use.
+
+The verification matrix for this rescue is:
+
+- wide desktop: 2560x1440
+- marking desktop: 1920x1080
+- short laptop: 1366x768
+- landscape tablet / small laptop: 1024x768
+- narrow portrait stress case from the failed audit: 692x1061
+- phone marking viewport: 390x844
+- small phone: 360x800
+- WCAG-style reflow floor: 320px wide single-column reading path
+
+Passing this checkpoint means:
+
+- no overlapping text blocks
+- no title/model/reveal collisions
+- no horizontal overflow in the reading path
+- the control remains comfortably targetable
+- the scene still reads as the hero on desktop
+- the phone version reads as an intentional story, not a squeezed desktop
+  screenshot
+
 ### Experience flow
 
 1. The experience opens directly into a full-screen atmospheric scene.

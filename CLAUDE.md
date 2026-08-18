@@ -211,6 +211,19 @@ stack or brief:
   build, not a source reading. Both marking viewports (1920×1080, 390×844),
   keyboard-only operation, resize mid-use, and reduced-motion parity are
   blocking checks, not nice-to-haves.
+- If a responsive/layout bug appears in a major UI slice, do not start by
+  nudging isolated top/right/width values. First inspect the production build
+  in a real browser, name the colliding regions, and decide whether the failure
+  is structural. If narrative blocks and illustration geometry are fighting for
+  the same absolute-positioned space, fix the structure before polishing the
+  art.
+- For this repo specifically, absolute positioning is reserved for the physical
+  illustration layer. The title, model strip, spectrum readout, control rail,
+  and explanatory text must be laid out by grid/flex containers with bounded
+  sizes, so they can reflow independently across widths and heights.
+- Breakpoints are content-driven. Do not write desktop/tablet/phone rules from
+  device names or copied dimensions; use the viewport matrix in PLAN.md only
+  as evidence that the chosen structure survives real stress cases.
 - After a resume, a compaction, or any context loss, re-read `PLAN.md`,
   `git status`, and recent `git log` before acting. Never reconstruct a lost
   instruction from memory --- ask instead.

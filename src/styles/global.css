@@ -816,6 +816,16 @@ a {
   line-height: 1.55;
 }
 
+.coda-warning {
+  max-width: 48ch;
+  margin: 0.85rem 0 0;
+  padding-left: 0.85rem;
+  border-left: 0.18rem solid var(--coda-signal);
+  color: rgb(22 23 27 / 78%);
+  font-weight: 650;
+  line-height: 1.5;
+}
+
 .coda-boundary {
   max-width: 54ch;
   margin: 1rem 0 0;
@@ -872,6 +882,17 @@ a {
 .trace-copy {
   max-width: 50ch;
   color: rgb(22 23 27 / 66%);
+  line-height: 1.5;
+}
+
+.trace-advice {
+  max-width: 52ch;
+  margin: 1rem 0 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgb(22 23 27 / 18%);
+  background: rgb(255 255 255 / 42%);
+  color: rgb(22 23 27 / 82%);
+  font-weight: 650;
   line-height: 1.5;
 }
 
@@ -1024,21 +1045,7 @@ a {
   }
 
   .explanation-pane {
-    position: sticky;
-    top: clamp(1rem, 2.6vw, 2.6rem);
-    max-height: calc(100dvh - clamp(2rem, 5.2vw, 5.2rem));
     margin-top: 0;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-gutter: stable;
-  }
-
-  .reading-head {
-    position: sticky;
-    z-index: 2;
-    top: 0;
-    padding-top: 0.15rem;
-    background: linear-gradient(#0d1610 82%, rgb(13 22 16 / 0%));
   }
 
   .coda-shell {
@@ -1109,9 +1116,6 @@ a {
     margin-bottom: 0.15rem;
   }
 
-  .explanation-pane {
-    max-height: calc(100dvh - clamp(1.5rem, 3.4vh, 2.3rem));
-  }
 }
 
 @media (width <= 43.99rem) {
@@ -1137,8 +1141,15 @@ a {
   }
 
   .bench-caption,
-  .bench-received text {
+  .bench-received-strong {
     opacity: 0;
+  }
+
+  .bench-received > text:not(.bench-received-strong) {
+    opacity: 0.92;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
   }
 
   .sun-control {

@@ -15,11 +15,11 @@ describe("assignment 1: the observer opens a local-only footprint coda", () => {
     expect(gate?.getAttribute("aria-controls")).toBe("footprint-coda");
   });
 
-  it("ships one initially hidden coda with four ordered signal cards", () => {
+  it("ships one initially hidden coda with five ordered signal cards", () => {
     const coda = doc.querySelector('[data-testid="footprint-coda"]');
     expect(coda).toBeTruthy();
     expect(coda?.hasAttribute("hidden")).toBe(true);
-    expect(coda?.querySelectorAll('[data-testid="trace-card"]').length).toBe(4);
+    expect(coda?.querySelectorAll('[data-testid="trace-card"]').length).toBe(5);
     expect(coda?.querySelector("[data-trace-next]")).toBeTruthy();
     expect(coda?.querySelector("[data-trace-previous]")).toBeTruthy();
     expect(coda?.querySelector("[data-trace-erase]")).toBeTruthy();
@@ -31,7 +31,8 @@ describe("assignment 1: the observer opens a local-only footprint coda", () => {
       "elapsed", "moves", "range", "modes", "pointer-moves", "clicks", "keys",
       "viewport", "pixels",
       "language", "languages", "timezone", "colour-depth", "touch",
-      "cores", "memory", "connection", "privacy", "display",
+      "cores", "memory", "connection", "privacy", "display", "screen", "available",
+      "orientation", "platform", "vendor", "cookies", "online",
       "resizes", "visibility"
     ]) {
       const value = coda?.querySelector(`[data-trace="${signal}"]`);
@@ -50,6 +51,10 @@ describe("assignment 1: the observer opens a local-only footprint coda", () => {
     expect(text).toMatch(/nothing (?:is|was) sent|trace uploads\s*0/);
     expect(text).toMatch(/permission prompts\s*0/);
     expect(text).toContain("erase");
+    expect(text).toContain("combined");
+    expect(text).toContain("permissions");
+    expect(text).toContain("privacy settings");
+    expect(text).toContain("third-party trackers");
   });
 
   it("lists multiple browser and device hints inside the environment card", () => {
@@ -65,6 +70,25 @@ describe("assignment 1: the observer opens a local-only footprint coda", () => {
       "memory hint",
       "connection hint",
       "privacy signals",
+    ]) {
+      expect(text).toContain(phrase);
+    }
+  });
+
+  it("explains additional browser-surface hints without pretending they identify a person", () => {
+    const text = (doc.querySelector('[data-trace-card="3"]')?.textContent ?? "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase();
+    for (const phrase of [
+      "screen size",
+      "available screen",
+      "orientation",
+      "platform hint",
+      "browser vendor",
+      "cookie capability",
+      "online status",
+      "clues",
     ]) {
       expect(text).toContain(phrase);
     }

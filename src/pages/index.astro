@@ -182,8 +182,8 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
               <g class="bench-received" aria-hidden="true" transform={`translate(${geometry.receivedX} ${geometry.receivedY})`}>
                 <circle class="bench-received-halo" r="45" />
                 <circle data-bench-received-swatch r="26" fill={scene.sunColor} />
-                <text x="48" y="-6">LIGHT THAT SURVIVED</text>
-                <text class="bench-received-strong" x="48" y="18">spectrum-derived colour</text>
+                <text data-testid="received-colour-label" x="48" y="-6">LIGHT REACHING YOU</text>
+                <text class="bench-received-strong" x="48" y="18">remaining direct colour</text>
               </g>
               <text class="bench-caption bench-caption-scatter" x={geometry.labelX} y={geometry.labelY}>BLUE REDIRECTED</text>
             </svg>
@@ -355,6 +355,7 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
           <h2 id="footprint-title" tabindex="-1">The page had an observer, too.</h2>
           <p class="coda-lede">You watched the atmosphere turn light into signals. Meanwhile, the page turned this visit into signals — without asking for a sensitive permission.</p>
           <p class="coda-boundary">This session only. Nothing is saved. Nothing is sent. Reloading erases it.</p>
+          <p class="coda-warning">One clue is usually ordinary. Combined with many others, it can make a browser easier to recognise across visits.</p>
         </div>
         <div class="trace-deck" aria-live="polite">
           <article class="trace-card" data-testid="trace-card" data-trace-card="0">
@@ -383,13 +384,24 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
             </dl>
             <p class="trace-copy">Most of these are coarse browser hints, not account data. They are still enough to narrow down what kind of device and context is visiting.</p>
           </article>
-          <article class="trace-card trace-card-zero" data-testid="trace-card" data-trace-card="3" hidden>
-            <p class="trace-card-number">04 / BOUNDARY</p><h3>What this prototype refused to collect.</h3>
+          <article class="trace-card" data-testid="trace-card" data-trace-card="3" hidden>
+            <p class="trace-card-number">04 / SURFACE</p><h3>The screen added more clues.</h3>
+            <dl class="trace-facts trace-facts-wide">
+              <div><dt>screen size</dt><dd data-trace="screen">—</dd></div><div><dt>available screen</dt><dd data-trace="available">—</dd></div>
+              <div><dt>orientation</dt><dd data-trace="orientation">—</dd></div><div><dt>platform hint</dt><dd data-trace="platform">—</dd></div>
+              <div><dt>browser vendor</dt><dd data-trace="vendor">—</dd></div><div><dt>cookie capability</dt><dd data-trace="cookies">—</dd></div>
+              <div><dt>online status</dt><dd data-trace="online">—</dd></div>
+            </dl>
+            <p class="trace-copy">None of these clues proves who you are. Combined with other signals, they can make this browser easier to recognise.</p>
+          </article>
+          <article class="trace-card trace-card-zero" data-testid="trace-card" data-trace-card="4" hidden>
+            <p class="trace-card-number">05 / CHOICE</p><h3>Notice the request before you accept it.</h3>
             <div class="zero-grid"><p><strong>0</strong><span>permission prompts</span></p><p><strong>0</strong><span>trace uploads</span></p><p><strong>0</strong><span>saved records</span></p></div>
-            <p class="trace-copy">No camera, microphone, location, cookies, analytics, or persistent fingerprint.</p>
+            <p class="trace-copy">This prototype used no camera, microphone, location, analytics, cookies, or persistent fingerprint.</p>
+            <p class="trace-advice">Elsewhere, pause before granting permissions, review your browser's privacy settings, block unnecessary third-party trackers, and erase site data you no longer need.</p>
           </article>
           <nav class="trace-nav" aria-label="Session trace slides">
-            <button type="button" data-trace-previous>Previous signal</button><output data-trace="progress" aria-live="off">1 / 4</output><button type="button" data-trace-next>Next signal</button>
+            <button type="button" data-trace-previous>Previous signal</button><output data-trace="progress" aria-live="off">1 / 5</output><button type="button" data-trace-next>Next signal</button>
           </nav>
         </div>
         <footer class="coda-footer"><button class="coda-return" type="button" data-trace-return>Return to the light</button><button class="coda-erase" type="button" data-trace-erase>Erase this trace</button></footer>

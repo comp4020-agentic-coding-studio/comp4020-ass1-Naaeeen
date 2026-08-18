@@ -309,10 +309,18 @@ These rules supersede earlier responsive-rescue notes if they conflict.
   other short laptop viewports, the optical bench may shrink, but the labelled
   Sun-elevation control and the live current explanation must be visible
   together without scrolling the page.
-- If the deeper science panel needs more space, it scrolls inside its reading
-  pane while the current observation remains pinned. Do not solve the problem
-  by hiding equations, shrinking text below a readable size, or overlaying the
-  control on the SVG.
+- On desktop, keep the simulation and its slider sticky while the explanation
+  remains in normal document flow. Do not create a nested primary-content
+  scroller or pin Current observation inside the reading panel. At the top of
+  the page, the slider and live observation must still be visible together.
+- The received-colour marker needs a visible plain-language label at every
+  breakpoint; never leave the swatch as an unexplained decorative ball.
+- Critical copy, the SVG scene, the control, and the three equations are
+  server-rendered and local. Never hide them behind a blocking loading screen
+  or make first comprehension depend on a remote font, image, API, or tracker.
+- Privacy-coda hints stay passive, synchronous, and memory-only. Reading a
+  capability is allowed; requesting permission, storing, fingerprinting, or
+  transmitting a visitor trace is not.
 - Lead each science step with a plain-language cause and result, then show the
   equation as supporting evidence. Extra explanation must deepen the existing
   path → scatter → transmit chain, not introduce a second mechanic.

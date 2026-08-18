@@ -57,4 +57,13 @@ describe("short-screen interactive lesson", () => {
     expect(text(tips[0])).toContain("observer");
     expect(benchText).not.toContain("observe the observer");
   });
+
+  it("names the received-colour swatch inside the illustration", () => {
+    const label = document.querySelector('[data-testid="received-colour-label"]');
+    const received = document.querySelector('[data-testid="received-colour"]');
+
+    expect(label).toBeTruthy();
+    expect(text(label)).toContain("light reaching you");
+    expect(text(received)).toContain("resulting direct light");
+  });
 });

@@ -18,6 +18,9 @@ interface BrowserHints extends Navigator {
   };
   readonly deviceMemory?: number;
   readonly globalPrivacyControl?: boolean;
+  readonly userAgentData?: {
+    readonly platform?: string;
+  };
 }
 
 const range = document.querySelector<HTMLInputElement>("#elevation");
@@ -85,6 +88,17 @@ function privacySignals(): string {
   const dnt = navigator.doNotTrack === "1" ? "DNT on" : "DNT off";
   return gpc + " · " + dnt;
 }
+function orientationHint(): string {
+  const orientation = screen.orientation;
+  if (orientation?.type) return orientation.type + " · " + orientation.angle + "°";
+  return innerWidth >= innerHeight ? "landscape estimate" : "portrait estimate";
+}
+
+function platformHint(): string {
+  const browser = navigator as BrowserHints;
+  return browser.userAgentData?.platform || navigator.platform || "not exposed";
+}
+
 
 function renderTrace(trace: SessionTrace): void {
   const seconds = Math.max(1, Math.round((performance.now() - trace.startedAt) / 1000));
@@ -108,6 +122,13 @@ function renderTrace(trace: SessionTrace): void {
   put("connection", connectionHint());
   put("privacy", privacySignals());
   put("display", displayPreference());
+  put("screen", screen.width + " × " + screen.height + " CSS px");
+  put("available", screen.availWidth + " × " + screen.availHeight + " CSS px");
+  put("orientation", orientationHint());
+  put("platform", platformHint());
+  put("vendor", navigator.vendor || "not exposed");
+  put("cookies", navigator.cookieEnabled ? "available · unused here" : "disabled");
+  put("online", navigator.onLine ? "browser reports online" : "browser reports offline");
   put("resizes", String(trace.resizes));
   put("visibility", String(trace.visibilityChanges));
 }
@@ -230,3 +251,5 @@ function initialise(): void {
 }
 
 initialise();
+
+export {};

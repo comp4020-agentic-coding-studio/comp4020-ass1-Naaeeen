@@ -3,32 +3,41 @@ import { resolve } from "node:path";
 import { JSDOM } from "jsdom";
 import { describe, expect, it } from "vitest";
 
-const css = readFileSync(resolve("src/styles/global.css"), "utf8");
 const doc = new JSDOM(readFileSync(resolve("dist/index.html"), "utf8")).window.document;
 
-describe("responsive layout: stage and instrument deck", () => {
-  it("keeps the arrival spectrum and science model inside the instrument deck", () => {
-    const rail = doc.querySelector('[data-testid="rail"]');
-    const arrival = doc.querySelector('[data-testid="arrival-spectrum"]');
-    const model = doc.querySelector('[data-testid="airmass-model"]');
+describe("responsive layout domains", () => {
+  it("reserves the atmosphere for scene geometry only", () => {
     const atmosphere = doc.querySelector('[data-testid="atmosphere"]');
 
+    expect(atmosphere).toBeTruthy();
+    expect(atmosphere?.querySelector('[data-testid="direct-beam"]')).toBeTruthy();
+    expect(atmosphere?.querySelector('[data-testid="trace-aperture"]')).toBeTruthy();
+    expect(atmosphere?.querySelector("h1")).toBeFalsy();
+    expect(atmosphere?.querySelector('[data-testid="horizon-reveal"]')).toBeFalsy();
+    expect(atmosphere?.querySelector('[data-testid="airmass-model"]')).toBeFalsy();
+    expect(atmosphere?.querySelector('[data-testid="arrival-spectrum"]')).toBeFalsy();
+    expect(atmosphere?.querySelector('input[type="range"]')).toBeFalsy();
+  });
+
+  it("gives the HUD one stable narrative responsibility", () => {
+    const hud = doc.querySelector('[data-testid="hero-copy"]');
+
+    expect(hud).toBeTruthy();
+    expect(hud?.querySelectorAll("nav").length).toBe(1);
+    expect(hud?.querySelectorAll("h1").length).toBe(1);
+    expect(hud?.querySelector('[data-testid="instruction"]')).toBeTruthy();
+    expect(hud?.querySelector('[data-testid="horizon-reveal"]')).toBeTruthy();
+    expect(hud?.querySelector('[data-testid="airmass-model"]')).toBeFalsy();
+  });
+
+  it("gives the rail one stable control and explanation responsibility", () => {
+    const rail = doc.querySelector('[data-testid="rail"]');
+
     expect(rail).toBeTruthy();
-    expect(arrival).toBeTruthy();
-    expect(model).toBeTruthy();
-    expect(rail?.contains(arrival ?? null)).toBe(true);
-    expect(rail?.contains(model ?? null)).toBe(true);
-    expect(atmosphere?.contains(model ?? null)).toBe(false);
-  });
-
-  it("ships a dedicated rail sidecar instead of floating teaching panels over the sky", () => {
-    expect(doc.querySelector('[data-testid="rail-sidecar"]')).toBeTruthy();
-    expect(css).toMatch(/\.rail-sidecar\s*\{/);
-    expect(css).toMatch(/@media \(width >= 60rem\) \{[\s\S]*?\.control-deck \.rail\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0, 1fr\) minmax\(18rem, 28rem\)/);
-  });
-
-  it("reasserts the deck layout as the final positioning rule for the spectrum and model", () => {
-    expect(css).toMatch(/\.control-deck \.arrival\s*\{[\s\S]*?position:\s*relative;[\s\S]*?top:\s*auto;[\s\S]*?right:\s*auto;/);
-    expect(css).toMatch(/\.science-panel \.model-strip\s*\{[\s\S]*?position:\s*relative;[\s\S]*?inset:\s*auto;/);
+    expect(rail?.querySelectorAll('input[type="range"]').length).toBe(1);
+    expect(rail?.querySelector("#explanation")).toBeTruthy();
+    expect(rail?.querySelector('[data-testid="arrival-spectrum"]')).toBeTruthy();
+    expect(rail?.querySelector('[data-testid="airmass-model"]')).toBeTruthy();
+    expect(rail?.querySelector('[data-testid="physics-disclosure"]')).toBeTruthy();
   });
 });

@@ -41,12 +41,32 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
     aria-label="The Sun Never Turned Red: an interactive atmospheric explainer"
     style={sceneStyleAttr}
   >
-    <div class="stage-shell">
-    <div
+    <div class="stage-shell" data-testid="experience-shell">
+      <header class="overlay" data-testid="hero-copy">
+        <nav aria-label="Primary">
+          <a href="./">Home</a>
+        </nav>
+        <p class="hero-kicker">Atmospheric optics · one causal model</p>
+        <h1>The Sun Never Turned Red</h1>
+        <p class="instruction" data-testid="instruction">
+          Move the Sun toward the horizon.
+        </p>
+        <div
+          class="horizon-reveal"
+          data-testid="horizon-reveal"
+          aria-live="polite"
+          aria-hidden={!scene.horizonReveal}
+        >
+          <p>The atmosphere changed what reached you.</p>
+          <span>The Sun never turned red.</span>
+        </div>
+      </header>
+
+      <div
       class="atmosphere"
       data-testid="atmosphere"
       role="img"
-      aria-label="A diagram of sunlight travelling to a collecting aperture on the ground. Lowering the Sun flattens the route so it crosses more shells of air; short-wavelength packets are turned aside out of the beam and spread across the sky, and the packets still arriving are the longer, warmer ones. Raising the Sun shortens and steepens the route, so less is turned aside and the arriving light stays pale. A spectrum labelled what reached the aperture reads out band by band, and the written explanation describes the current setting."
+      aria-label="A diagram of sunlight travelling to a collecting aperture on the ground. Lowering the Sun flattens the route so it crosses more shells of air; short-wavelength packets turn aside while the longer, warmer packets continue to the aperture. Raising the Sun shortens and steepens the route, so less light is redirected."
     >
       <!-- Shells of air. The shallow route crosses more of them, which is what
            makes the longer low-Sun path legible rather than merely stated. -->
@@ -153,30 +173,11 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
         </span>
       </div>
 
-      <div
-        class="horizon-reveal"
-        data-testid="horizon-reveal"
-        aria-live="polite"
-        aria-hidden={!scene.horizonReveal}
-      >
-        <p>The atmosphere changed what reached you.</p>
-        <span>The Sun never turned red.</span>
-      </div>
-
       <!-- This label stays in atmosphere space rather than the rotated frame,
            so it cannot swing out of the viewport at steep angles. -->
       <p class="scene-label scene-label-scatter">blue redirected</p>
     </div>
 
-    <header class="overlay" data-testid="hero-copy">
-      <nav aria-label="Primary">
-        <a href="./">Home</a>
-      </nav>
-      <h1>The Sun Never Turned Red</h1>
-      <p class="instruction" data-testid="instruction">
-        Move the Sun toward the horizon.
-      </p>
-    </header>
     </div>
 
     <section class="control-deck" data-testid="control-deck">
@@ -234,7 +235,12 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
               </div>
             </figure>
 
-            <aside class="model-strip" data-testid="airmass-model" aria-label="The three-step light model">
+            <details class="physics-disclosure" data-testid="physics-disclosure">
+              <summary>
+                <span>Why the colour changes</span>
+                <small>Three linked equations</small>
+              </summary>
+              <aside class="model-strip" data-testid="airmass-model" aria-label="The three-step light model">
               <p class="model-kicker">One slider · one causal model</p>
               <ol>
                 <li>
@@ -256,7 +262,8 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
                   <small><var>T</var> is transmitted direct light. A longer path removes more blue, so the direct beam arrives dimmer and warmer.</small>
                 </li>
               </ol>
-            </aside>
+              </aside>
+            </details>
           </div>
         </div>
       </div>

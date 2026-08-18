@@ -302,3 +302,20 @@ These rules supersede earlier responsive-rescue notes if they conflict.
 - The compact layout is not a shrunk desktop poster. On narrow and tall
   screens, title, control, explanation, equations, and the privacy trigger must
   read as a vertical story with the scene as one strong block near the top.
+
+### Short-screen instrument correction — 2026-08-19
+
+- On desktop layouts, height is a first-class constraint. At 1366×768 and
+  other short laptop viewports, the optical bench may shrink, but the labelled
+  Sun-elevation control and the live current explanation must be visible
+  together without scrolling the page.
+- If the deeper science panel needs more space, it scrolls inside its reading
+  pane while the current observation remains pinned. Do not solve the problem
+  by hiding equations, shrinking text below a readable size, or overlaying the
+  control on the SVG.
+- Lead each science step with a plain-language cause and result, then show the
+  equation as supporting evidence. Extra explanation must deepen the existing
+  path → scatter → transmit chain, not introduce a second mechanic.
+- The aperture has one short, visible invitation. Do not duplicate the prompt
+  in both SVG text and an HTML overlay, and keep the native button's accessible
+  name more descriptive than its visual hint.

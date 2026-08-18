@@ -190,12 +190,12 @@ export function deriveScene(elevationDeg: number): SunScene {
 function explain(elevationDeg: number, t: number): string {
   const degrees = Math.round(elevationDeg);
   if (t > 0.66) {
-    return `At ${degrees}° the Sun sits high overhead. Its light takes a short path through the atmosphere, so little of it is scattered away — the direct beam still looks close to white.`;
+    return `At ${degrees}°, sunlight takes the short route through the air. Most colours stay in the direct beam, so the light reaching the aperture still looks close to white.`;
   }
   if (t > 0.28) {
-    return `At ${degrees}° the Sun is partway down the sky. Its light now crosses more atmosphere, scattering out more of the short-wavelength light and leaving the direct beam looking a little warmer.`;
+    return `At ${degrees}°, the route through the air is getting longer. More blue light is redirected sideways, so the direct beam reaching you starts to look warmer.`;
   }
-  return `At ${degrees}° the Sun is near the horizon. Its light crosses a much longer stretch of atmosphere, scattering away most of the short-wavelength light — the direct beam that reaches here looks distinctly warm, even though the Sun itself hasn't changed colour.`;
+  return `At ${degrees}°, sunlight skims through a long stretch of atmosphere. Much more blue is redirected into the sky, leaving the direct beam dimmer and orange-red. The Sun did not change — the journey did.`;
 }
 
 const round = (n: number): string => n.toFixed(3);

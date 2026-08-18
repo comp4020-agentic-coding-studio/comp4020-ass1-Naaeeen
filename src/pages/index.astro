@@ -186,7 +186,6 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
                 <text class="bench-received-strong" x="48" y="18">spectrum-derived colour</text>
               </g>
               <text class="bench-caption bench-caption-scatter" x={geometry.labelX} y={geometry.labelY}>BLUE REDIRECTED</text>
-              <text class="bench-caption bench-caption-observer" x="180" y="486">OBSERVE THE OBSERVER</text>
             </svg>
 
             <button
@@ -194,11 +193,12 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
               data-testid="trace-aperture"
               type="button"
               aria-label="Open the observer's session trace"
+              aria-describedby="observer-tip"
               aria-controls="footprint-coda"
               aria-expanded="false"
             >
               <span class="trace-focus-ring" aria-hidden="true"></span>
-              <span class="receiver-hint" aria-hidden="true">observe the observer</span>
+              <span class="receiver-hint" data-testid="observer-tip" id="observer-tip">Psst. Press the observer.</span>
             </button>
 
             <div class="portal-field" aria-hidden="true">
@@ -213,7 +213,7 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
             </div>
           </div>
 
-          <div class="sun-control">
+          <div class="sun-control" data-testid="instrument-control">
             <div class="control-heading">
               <label for="elevation">Sun elevation</label>
               <output class="rail-value" data-testid="value-readout" for="elevation">{Math.round(scene.elevationDeg)}°</output>
@@ -233,7 +233,7 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
         </section>
 
         <aside class="explanation-pane" data-testid="explanation-pane" aria-label="Current observation and physical model">
-          <div class="reading-head">
+          <div class="reading-head" data-testid="live-observation">
             <p class="reading-kicker">Current observation</p>
             <div
               class="horizon-reveal"
@@ -271,27 +271,57 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
               <span><small>Resulting direct light</small><strong>spectrum-derived colour</strong></span>
             </div>
 
+            <section class="plain-guide" data-testid="plain-language-guide" aria-labelledby="plain-guide-title">
+              <p class="reading-kicker">What to notice as you drag</p>
+              <h2 id="plain-guide-title">Read the sunset without the maths</h2>
+              <ul>
+                <li>
+                  <strong>Lower Sun, longer trip through air.</strong>
+                  <span>Overhead, the light takes a short route down. Near the horizon, it cuts sideways through much more atmosphere.</span>
+                </li>
+                <li>
+                  <strong>Blue light is scattered sideways, not destroyed.</strong>
+                  <span>Those short blue wavelengths are redirected into other directions. Some of that scattered light is what makes the rest of the sky look blue.</span>
+                </li>
+                <li>
+                  <strong>The direct sunlight loses more blue, so it looks warmer.</strong>
+                  <span>The beam reaching the aperture contains a larger share of orange and red light, even though the Sun itself did not change.</span>
+                </li>
+                <li>
+                  <strong>Blue sky and warm sunset are the same event seen two ways.</strong>
+                  <span>Look away from the Sun and you notice the blue light that got scattered around the sky. Look straight at the Sun and you notice the warmer light that stayed in the direct beam.</span>
+                </li>
+                <li>
+                  <strong>Real sunsets have extra ingredients.</strong>
+                  <span>Dust, smoke, water droplets and clouds can strengthen or flatten the colours. This small model only shows clean-air scattering.</span>
+                </li>
+              </ul>
+            </section>
+
             <section class="science-panel" data-testid="science-panel" aria-labelledby="model-title">
               <div class="science-heading">
                 <p class="reading-kicker">Why the colour changes</p>
-                <h2 id="model-title">Three equations, one chain</h2>
+                <h2 id="model-title">The maths behind the colour</h2>
               </div>
               <ol class="model-strip" data-testid="airmass-model" aria-label="The three-step light model">
                 <li>
                   <span class="model-number">01 · PATH</span>
                   <strong>Relative air mass <output data-testid="airmass-value">×{scene.pathAmount.toFixed(1)}</output></strong>
+                  <p class="model-plain">This number simply means “how much air is in the way”. It is close to 1× overhead, then rises sharply near the horizon.</p>
                   <code data-testid="model-equation">m(h) = [sin h + 0.50572(h + 6.07995)<sup>−1.6364</sup>]<sup>−1</sup></code>
                   <small><var>h</var> is apparent elevation. Near the horizon, light crosses much more atmosphere.</small>
                 </li>
                 <li>
                   <span class="model-number">02 · SCATTER</span>
-                  <strong>Fourth power</strong>
+                  <strong>Fourth power: why blue leaves first</strong>
+                  <p class="model-plain">Shorter wavelengths are easier for air molecules to redirect. A small change in wavelength produces a much bigger change in scattering.</p>
                   <code data-testid="model-equation">τ<sub>R</sub>(λ) ∝ λ<sup>−4</sup></code>
                   <small>λ is wavelength. Rayleigh scattering redirects 450 nm blue light about 4.4x more strongly than 650 nm red light.</small>
                 </li>
                 <li>
                   <span class="model-number">03 · TRANSMIT</span>
-                  <strong>What survives</strong>
+                  <strong>What survives to your eye</strong>
+                  <p class="model-plain">After that longer trip, the straight beam has lost more blue than red. What reaches you is both dimmer and warmer.</p>
                   <code data-testid="model-equation">T(λ,h) = e<sup>−m(h)τ<sub>R</sub>(λ)</sup></code>
                   <small>The transmitted direct light is the direct beam that survives. A longer path removes more blue, so it arrives dimmer and warmer.</small>
                 </li>

@@ -582,3 +582,51 @@ verification-only checkpoint that finds no required change records its
 evidence without manufacturing a commit. Unrelated checkpoints are still
 never combined into one commit. `PROCESS.md` is not pre-written — evidence is
 preserved as the work actually happens.
+
+## Responsive rebuild correction — 2026-08-18
+
+The failed screenshots change the architecture decision. The next rebuild no
+longer treats the current region shell as the target composition. It uses one
+scalable optical-bench scene for the physical geometry, while title,
+instruction, conclusion, control, explanation, spectrum, and equations remain
+outside that coordinate system in normal layout flow.
+
+### Superseding architecture rule
+
+This section supersedes the earlier "region shell" rescue notes where they
+conflict.
+
+- Prefer one responsive SVG optical bench over many absolutely positioned HTML
+  scene fragments.
+- Physical geometry lives in one coordinate system: Sun, beam, atmospheric
+  path, scattering, aperture, horizon, and in-scene labels.
+- Breakpoints may rearrange whole panes, but they must not retune individual
+  scene coordinates.
+- The equations are always visible in the default reading order. They may
+  reformat by breakpoint, but they may not hide in `<details>`, tabs, or a
+  separate route.
+- Compact layout is allowed to scroll vertically. The page does not need to fit
+  the entire lesson into one `100dvh` phone poster.
+
+### Pane contract
+
+- `[data-testid="simulation-pane"]` contains title, instruction, SVG scene,
+  and the one elevation control.
+- `[data-testid="optical-bench"]` is the one SVG scene. It has a `viewBox` and
+  explicit `preserveAspectRatio`.
+- `[data-testid="explanation-pane"]` contains current explanation, arrival
+  spectrum, model note, and exactly three visible equations.
+- `[data-testid="footprint-coda"]` remains outside the normal pane layout and
+  opens as the same local-only privacy reveal.
+
+### Browser acceptance added to the checkpoint
+
+- At 90°, the Sun remains fully inside the SVG viewport.
+- At 0°, the low-Sun route, aperture, and received-colour witness remain
+  visible without text collisions.
+- The equations are visible at desktop and phone widths without expansion.
+- The title never overlaps the scene thesis or the horizon reveal.
+- At 320px width, the page keeps one readable vertical flow with no horizontal
+  text scrolling.
+- At square-ish and short-laptop ratios, the SVG scales cleanly rather than
+  leaving a giant dead header region above a clipped scene.

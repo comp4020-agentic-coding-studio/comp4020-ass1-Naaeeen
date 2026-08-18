@@ -285,3 +285,20 @@ of a composed page.
   obtain responsiveness. Add a dependency only if a named requirement cannot
   be met by the existing Astro + SVG + TypeScript stack and record that gate in
   `PLAN.md` first.
+
+## Responsive rebuild correction — 2026-08-18
+
+These rules supersede earlier responsive-rescue notes if they conflict.
+
+- Treat the current responsive failure as structural, not as coordinate
+  patching. If a layout issue is caused by scene geometry, fix the SVG
+  composition; if it is caused by reading flow, fix the pane structure.
+- Build the atmospheric explainer around one SVG optical bench, not a stack of
+  absolutely positioned HTML scene fragments.
+- Required science content may not hide inside disclosure chrome. The three
+  equations, the short causal explanation, and the spectrum witness stay
+  directly readable in normal document flow on both desktop and compact
+  layouts.
+- The compact layout is not a shrunk desktop poster. On narrow and tall
+  screens, title, control, explanation, equations, and the privacy trigger must
+  read as a vertical story with the scene as one strong block near the top.

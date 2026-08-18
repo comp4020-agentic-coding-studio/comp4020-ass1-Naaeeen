@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import {
+  benchGeometry,
   deriveScene,
   sceneStyle,
   SCATTER_MARKS,
@@ -12,8 +13,8 @@ import {
 } from "../scripts/main";
 
 const scene = deriveScene(INITIAL_ELEVATION);
+const geometry = benchGeometry(scene);
 const sceneStyleAttr = sceneStyle(scene);
-const AIR_BANDS = [0, 1, 2, 3];
 const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
   const angle = (index / 24) * Math.PI * 2 + (index % 3) * 0.08;
   const distance = 30 + (index % 6) * 8;
@@ -28,164 +29,195 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
 ---
 
 <Layout title="The Sun Never Turned Red">
-  <!--
-    The stage is the whole viewport-scale experience and carries the canonical
-    elevation state as CSS custom properties, which inherit down into every
-    part of the illustration. It is deliberately not role="img": it contains
-    the range control, and image semantics would bury it. The visual
-    description lives on the atmosphere field instead.
-  -->
   <main
     class="stage"
     data-testid="scene"
     aria-label="The Sun Never Turned Red: an interactive atmospheric explainer"
     style={sceneStyleAttr}
   >
-    <div class="stage-shell" data-testid="experience-shell">
-      <header class="overlay" data-testid="hero-copy">
-        <nav aria-label="Primary">
-          <a href="./">Home</a>
-        </nav>
-        <p class="hero-kicker">Atmospheric optics · one causal model</p>
-        <h1>The Sun Never Turned Red</h1>
-        <p class="instruction" data-testid="instruction">
-          Move the Sun toward the horizon.
-        </p>
-        <div
-          class="horizon-reveal"
-          data-testid="horizon-reveal"
-          aria-live="polite"
-          aria-hidden={!scene.horizonReveal}
-        >
-          <p>The atmosphere changed what reached you.</p>
-          <span>The Sun never turned red.</span>
-        </div>
-      </header>
+    <section class="experience-shell" data-testid="experience-shell">
+      <div class="control-deck" data-testid="control-deck">
+        <section class="simulation-pane" data-testid="simulation-pane" aria-labelledby="page-title">
+          <header class="hero-copy" data-testid="hero-copy">
+            <nav aria-label="Primary"><a href="./">Home</a></nav>
+            <p class="hero-kicker">Atmospheric optics · one causal model</p>
+            <h1 id="page-title">The Sun Never Turned Red</h1>
+            <p class="instruction" data-testid="instruction">Move the Sun toward the horizon.</p>
+          </header>
 
-      <div
-      class="atmosphere"
-      data-testid="atmosphere"
-      role="img"
-      aria-label="A diagram of sunlight travelling to a collecting aperture on the ground. Lowering the Sun flattens the route so it crosses more shells of air; short-wavelength packets turn aside while the longer, warmer packets continue to the aperture. Raising the Sun shortens and steepens the route, so less light is redirected."
-    >
-      <!-- Shells of air. The shallow route crosses more of them, which is what
-           makes the longer low-Sun path legible rather than merely stated. -->
-      <div class="air-shells" aria-hidden="true">
-        {AIR_BANDS.map((i) => <span class="air-shell" style={`--shell:${i};`} />)}
-      </div>
+          <div class="bench-wrap" data-testid="atmosphere">
+            <svg
+              class="optical-bench"
+              data-testid="optical-bench"
+              role="img"
+              aria-labelledby="bench-title bench-desc"
+              viewBox="0 0 1200 720"
+              preserveAspectRatio="xMidYMid meet"
+            >
+              <title id="bench-title">Sunlight crossing the atmosphere toward an observer</title>
+              <desc id="bench-desc">
+                Moving the Sun lower lengthens its atmospheric path. Short blue wavelengths scatter outward more strongly while warmer light reaches the aperture.
+              </desc>
+              <defs>
+                <linearGradient id="sky-depth" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="var(--sky-color)" />
+                  <stop offset="0.72" stop-color="color-mix(in srgb, var(--sky-color), #f9c98b 20%)" />
+                  <stop offset="1" stop-color="color-mix(in srgb, var(--sky-color), #f5a064 42%)" />
+                </linearGradient>
+                <radialGradient id="sun-halo">
+                  <stop offset="0" stop-color="#fff8dc" stop-opacity="0.86" />
+                  <stop offset="0.28" stop-color="#ffe29f" stop-opacity="0.34" />
+                  <stop offset="1" stop-color="#ffc46a" stop-opacity="0" />
+                </radialGradient>
+                <linearGradient id="beam-light" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stop-color="var(--sun-color)" stop-opacity="0.26" />
+                  <stop offset="0.58" stop-color="#fff8d2" stop-opacity="0.58" />
+                  <stop offset="1" stop-color="#fff" stop-opacity="0.8" />
+                </linearGradient>
+                <filter id="soft-glow" x="-80%" y="-80%" width="260%" height="260%">
+                  <feGaussianBlur stdDeviation="14" />
+                </filter>
+                <filter id="small-glow" x="-80%" y="-80%" width="260%" height="260%">
+                  <feGaussianBlur stdDeviation="5" />
+                </filter>
+              </defs>
 
-      <div class="haze"></div>
+              <rect class="bench-sky" width="1200" height="720" rx="28" />
+              <g class="atmospheric-shells" aria-hidden="true">
+                <path d="M-70 610 C245 510 605 482 1280 550" />
+                <path d="M-90 470 C250 372 610 350 1300 415" />
+                <path d="M-120 318 C245 226 626 206 1320 270" />
+                <path d="M-150 170 C250 85 635 76 1350 132" />
+              </g>
+              <path class="bench-horizon" d="M0 586 L120 572 L228 586 L350 568 L500 591 L645 577 L806 592 L944 574 L1070 589 L1200 578 L1200 720 L0 720 Z" />
 
-      <!-- Everything geometric hangs off the observer and is rotated by the one
-           derived beam angle, so the route, the crossing, the packets and the
-           Sun can never drift out of alignment. -->
-      <div class="beam-anchor">
-        <div class="beam-frame">
-          <div class="beam-soft" data-testid="direct-beam"></div>
-          <div class="beam-core"></div>
+              <line
+                class="bench-ray bench-ray-soft"
+                data-testid="direct-beam"
+                x1={geometry.observerX}
+                y1={geometry.observerY}
+                x2={geometry.sunX}
+                y2={geometry.sunY}
+              />
+              <line
+                class="bench-ray bench-ray-core"
+                x1={geometry.observerX}
+                y1={geometry.observerY}
+                x2={geometry.sunX}
+                y2={geometry.sunY}
+              />
+              <line
+                class="bench-ray bench-path"
+                data-testid="atmospheric-path"
+                x1={geometry.observerX}
+                y1={geometry.observerY}
+                x2={geometry.pathX}
+                y2={geometry.pathY}
+              />
 
-          <div class="atmos-path" data-testid="atmospheric-path">
-            <div class="scattering" data-testid="scattering-layer">
-              {
-                SCATTER_MARKS.map((mark) => (
-                  <span
-                    class="scatter-mark"
-                    data-testid="scatter-mark"
-                    style={`--along:${mark.along};--side:${mark.side};--reach:${mark.reach.toFixed(3)};--tilt:${mark.tilt.toFixed(2)}deg;`}
-                  />
-                ))
-              }
-            </div>
+              <g class="bench-scattering" data-testid="scattering-layer" aria-hidden="true">
+                {SCATTER_MARKS.map((mark, index) => {
+                  const segment = geometry.scatterSegments[index];
+                  return (
+                    <line
+                      data-testid="scatter-mark"
+                      data-bench-scatter-index={index}
+                      x1={segment.x1}
+                      y1={segment.y1}
+                      x2={segment.x2}
+                      y2={segment.y2}
+                      opacity={segment.opacity}
+                      stroke-width={segment.width}
+                      style={`--along:${mark.along};--side:${mark.side};--reach:${mark.reach.toFixed(3)};--tilt:${mark.tilt.toFixed(2)}deg;`}
+                    />
+                  );
+                })}
+              </g>
 
-            <!-- The packets are the hero: short-wavelength ones peel out of the
-                 beam, long-wavelength ones carry on to the eye. -->
-            <div class="packets">
-              {
-                PACKETS.map((packet, i) => (
-                  <span
-                    class="packet"
-                    data-testid="packet"
-                    data-scatters={String(SPECTRUM_BANDS[packet.band].scatters)}
-                    data-band={SPECTRUM_BANDS[packet.band].label}
-                    style={`--along:${packet.along.toFixed(4)};--side:${packet.side};--reach:${packet.reach.toFixed(3)};--delay:${packet.delay.toFixed(3)};--tint:${SPECTRUM_BANDS[packet.band].tint};--band-t:var(--band-${packet.band});--i:${i};`}
-                  />
-                ))
-              }
+              <g class="bench-packets" aria-hidden="true">
+                {PACKETS.map((_packet, index) => {
+                  const segment = geometry.packetSegments[index];
+                  const band = SPECTRUM_BANDS[segment.band];
+                  return (
+                    <line
+                      class:list={["bench-packet", band.scatters && "is-scattered"]}
+                      data-bench-packet-index={index}
+                      data-testid="packet"
+                      data-band={band.label}
+                      data-scatters={String(band.scatters)}
+                      x1={segment.x1}
+                      y1={segment.y1}
+                      x2={segment.x2}
+                      y2={segment.y2}
+                      opacity={segment.opacity}
+                      stroke-width={segment.width}
+                      stroke={band.tint}
+                    />
+                  );
+                })}
+              </g>
+
+              <line
+                class="bench-ray bench-transmitted"
+                data-testid="transmitted-beam"
+                x1={geometry.observerX}
+                y1={geometry.observerY}
+                x2={geometry.transmittedX}
+                y2={geometry.transmittedY}
+              />
+
+              <circle class="bench-sun-bloom" cx={geometry.sunX} cy={geometry.sunY} r="88" />
+              <circle class="bench-sun-disc" cx={geometry.sunX} cy={geometry.sunY} r="34" fill={scene.sunColor} />
+
+              <g class="bench-receiver" aria-hidden="true" transform={`translate(${geometry.observerX} ${geometry.observerY})`}>
+                <circle class="receiver-aura" r="69" />
+                <circle class="receiver-ring" r="50" />
+                <circle class="receiver-body" r="31" />
+                <circle class="receiver-lens" r="12" />
+                {Array.from({ length: 16 }, (_unused, index) => (
+                  <line transform={`rotate(${index * 22.5})`} x1="35" y1="0" x2="49" y2="0" />
+                ))}
+              </g>
+
+              <g class="bench-received" aria-hidden="true" transform={`translate(${geometry.receivedX} ${geometry.receivedY})`}>
+                <circle class="bench-received-halo" r="45" />
+                <circle data-bench-received-swatch r="26" fill={scene.sunColor} />
+                <text x="48" y="-6">LIGHT THAT SURVIVED</text>
+                <text class="bench-received-strong" x="48" y="18">spectrum-derived colour</text>
+              </g>
+              <text class="bench-caption bench-caption-scatter" x={geometry.labelX} y={geometry.labelY}>BLUE REDIRECTED</text>
+              <text class="bench-caption bench-caption-observer" x="180" y="486">OBSERVE THE OBSERVER</text>
+            </svg>
+
+            <button
+              class="trace-aperture"
+              data-testid="trace-aperture"
+              type="button"
+              aria-label="Open the observer's session trace"
+              aria-controls="footprint-coda"
+              aria-expanded="false"
+            >
+              <span class="trace-focus-ring" aria-hidden="true"></span>
+              <span class="receiver-hint" aria-hidden="true">observe the observer</span>
+            </button>
+
+            <div class="portal-field" aria-hidden="true">
+              {PORTAL_PARTICLES.map((particle) => (
+                <span
+                  class="portal-particle"
+                  data-testid="portal-particle"
+                  aria-hidden="true"
+                  style={`--tx:${particle.x}vw;--ty:${particle.y}vh;--rot:${particle.rotation}deg;--delay:${particle.delay}ms;--size:${particle.size}px;`}
+                />
+              ))}
             </div>
           </div>
 
-          <div class="transmitted" data-testid="transmitted-beam"></div>
-
-          <div class="sun-bloom"></div>
-          <div class="sun-disc"></div>
-        </div>
-      </div>
-
-      <div class="horizon"></div>
-
-      <!-- The receiver: a graduated aperture, so the destination reads as an
-           instrument collecting light rather than a face looking at it. The
-           core brightens with whatever survived the crossing. -->
-      <button
-        class="receiver trace-aperture"
-        data-testid="trace-aperture"
-        type="button"
-        aria-label="Open the observer's session trace"
-        aria-controls="footprint-coda"
-        aria-expanded="false"
-      >
-        <span class="receiver-rim" aria-hidden="true"></span>
-        <span class="receiver-iris" aria-hidden="true"></span>
-        <span class="receiver-core" aria-hidden="true"></span>
-        <span class="receiver-hint" aria-hidden="true">observe the observer</span>
-      </button>
-
-      <div class="portal-field" aria-hidden="true">
-        {
-          PORTAL_PARTICLES.map((particle) => (
-            <span
-              class="portal-particle"
-              data-testid="portal-particle"
-              aria-hidden="true"
-              style={
-                "--tx:" +
-                particle.x +
-                "vw;--ty:" +
-                particle.y +
-                "vh;--rot:" +
-                particle.rotation +
-                "deg;--delay:" +
-                particle.delay +
-                "ms;--size:" +
-                particle.size +
-                "px;"
-              }
-            />
-          ))
-        }
-      </div>
-
-      <div class="received-colour" data-testid="received-colour">
-        <span class="received-swatch" aria-hidden="true"></span>
-        <span>
-          <small>light that survived</small>
-          <strong>spectrum-derived colour</strong>
-        </span>
-      </div>
-
-      <!-- This label stays in atmosphere space rather than the rotated frame,
-           so it cannot swing out of the viewport at steep angles. -->
-      <p class="scene-label scene-label-scatter">blue redirected</p>
-    </div>
-
-    </div>
-
-    <section class="control-deck" data-testid="control-deck">
-      <div class="rail" data-testid="rail">
-        <div class="rail-primary">
-          <div class="rail-control">
-            <label for="elevation">Sun elevation</label>
-            <span class="rail-end" aria-hidden="true">horizon</span>
+          <div class="sun-control">
+            <div class="control-heading">
+              <label for="elevation">Sun elevation</label>
+              <output class="rail-value" data-testid="value-readout" for="elevation">{Math.round(scene.elevationDeg)}°</output>
+            </div>
             <input
               type="range"
               id="elevation"
@@ -194,80 +226,86 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
               max={MAX_ELEVATION}
               step="1"
               value={INITIAL_ELEVATION}
+              aria-describedby="explanation"
             />
-            <span class="rail-end" aria-hidden="true">overhead</span>
-            <span class="rail-value" data-testid="value-readout" aria-hidden="true">
-              {Math.round(scene.elevationDeg)}°
-            </span>
+            <div class="control-scale" aria-hidden="true"><span>Horizon</span><span>Overhead</span></div>
+          </div>
+        </section>
+
+        <aside class="explanation-pane" data-testid="explanation-pane" aria-label="Current observation and physical model">
+          <div class="reading-head">
+            <p class="reading-kicker">Current observation</p>
+            <div
+              class="horizon-reveal"
+              data-testid="horizon-reveal"
+              aria-live="polite"
+              aria-hidden={!scene.horizonReveal}
+            >
+              <strong>The atmosphere changed what reached you.</strong>
+              <span>The Sun never turned red; the atmosphere changed the light that reached you.</span>
+            </div>
+            <output class="rail-output" for="elevation" id="explanation" aria-live="off">{scene.explanation}</output>
           </div>
 
-          <output class="rail-output" for="elevation" id="explanation" aria-live="off"
-            >{scene.explanation}</output
-          >
-
-          <p class="rail-note" data-testid="model-note">
-            Qualitative atmospheric model — equations are physical approximations; colour is illustrative, not calibrated.
-          </p>
-        </div>
-
-        <div class="rail-sidecar" data-testid="rail-sidecar">
-          <div class="science-panel" data-testid="science-panel">
+          <div class="rail" data-testid="rail">
             <figure class="arrival" data-testid="arrival-spectrum">
               <figcaption class="arrival-caption">What reached the aperture</figcaption>
               <div class="arrival-ribbon">
-                {
-                  SPECTRUM_BANDS.map((band, i) => (
-                    <span
-                      class="arrival-band"
-                      data-testid="spectrum-band"
-                      data-band={band.label}
-                      style={`--i:${i};--tint:${band.tint};--band-t:var(--band-${i});`}
-                    >
-                      <span class="arrival-band-fill"></span>
-                      <span class="visually-hidden">{band.label}</span>
-                    </span>
-                  ))
-                }
+                {SPECTRUM_BANDS.map((band, index) => (
+                  <span
+                    class="arrival-band"
+                    data-testid="spectrum-band"
+                    data-band={band.label}
+                    style={`--i:${index};--tint:${band.tint};--band-t:var(--band-${index});`}
+                  >
+                    <span class="arrival-band-fill"></span>
+                    <span class="visually-hidden">{band.label}</span>
+                  </span>
+                ))}
               </div>
-              <div class="arrival-scale">
-                <span>blue — redirected</span>
-                <span>red — gets through</span>
-              </div>
+              <div class="arrival-scale"><span>blue · redirected</span><span>red · transmitted</span></div>
             </figure>
 
-            <details class="physics-disclosure" data-testid="physics-disclosure">
-              <summary>
-                <span>Why the colour changes</span>
-                <small>Three linked equations</small>
-              </summary>
-              <aside class="model-strip" data-testid="airmass-model" aria-label="The three-step light model">
-              <p class="model-kicker">One slider · one causal model</p>
-              <ol>
+            <div class="received-colour" data-testid="received-colour">
+              <span class="received-swatch" aria-hidden="true"></span>
+              <span><small>Resulting direct light</small><strong>spectrum-derived colour</strong></span>
+            </div>
+
+            <section class="science-panel" data-testid="science-panel" aria-labelledby="model-title">
+              <div class="science-heading">
+                <p class="reading-kicker">Why the colour changes</p>
+                <h2 id="model-title">Three equations, one chain</h2>
+              </div>
+              <ol class="model-strip" data-testid="airmass-model" aria-label="The three-step light model">
                 <li>
-                  <span class="model-number">01</span>
+                  <span class="model-number">01 · PATH</span>
                   <strong>Relative air mass <output data-testid="airmass-value">×{scene.pathAmount.toFixed(1)}</output></strong>
                   <code data-testid="model-equation">m(h) = [sin h + 0.50572(h + 6.07995)<sup>−1.6364</sup>]<sup>−1</sup></code>
-                  <small><var>h</var> is apparent elevation, and <var>m</var> is relative air mass. At 10°, the beam crosses about 5.6x as much atmosphere as it does at 90°.</small>
+                  <small><var>h</var> is apparent elevation. Near the horizon, light crosses much more atmosphere.</small>
                 </li>
                 <li>
-                  <span class="model-number">02</span>
+                  <span class="model-number">02 · SCATTER</span>
                   <strong>Fourth power</strong>
                   <code data-testid="model-equation">τ<sub>R</sub>(λ) ∝ λ<sup>−4</sup></code>
-                  <small><var>λ</var> is wavelength. Rayleigh scattering makes 450 nm blue light scatter about 4.4x more strongly than 650 nm red light.</small>
+                  <small>λ is wavelength. Rayleigh scattering redirects 450 nm blue light about 4.4x more strongly than 650 nm red light.</small>
                 </li>
                 <li>
-                  <span class="model-number">03</span>
+                  <span class="model-number">03 · TRANSMIT</span>
                   <strong>What survives</strong>
                   <code data-testid="model-equation">T(λ,h) = e<sup>−m(h)τ<sub>R</sub>(λ)</sup></code>
-                  <small><var>T</var> is transmitted direct light. A longer path removes more blue, so the direct beam arrives dimmer and warmer.</small>
+                  <small>The transmitted direct light is the direct beam that survives. A longer path removes more blue, so it arrives dimmer and warmer.</small>
                 </li>
               </ol>
-              </aside>
-            </details>
+            </section>
+
+            <p class="rail-note" data-testid="model-note">
+              Qualitative atmospheric model. The equations are physical approximations; colour is illustrative, not calibrated.
+            </p>
           </div>
-        </div>
+        </aside>
       </div>
     </section>
+
     <section
       class="footprint-coda"
       data-testid="footprint-coda"
@@ -282,92 +320,49 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
           <p class="coda-wordmark">OBSERVER / LOCAL TRACE</p>
           <p class="coda-local">this session · memory only</p>
         </header>
-
         <div class="coda-intro">
           <p class="coda-index">A second observation</p>
           <h2 id="footprint-title" tabindex="-1">The page had an observer, too.</h2>
-          <p class="coda-lede">
-            You watched the atmosphere turn light into signals. Meanwhile, the page
-            turned this visit into signals — without asking for a sensitive permission.
-          </p>
-          <p class="coda-boundary">
-            This session only. Nothing is saved. Nothing is sent. Reloading erases it.
-          </p>
+          <p class="coda-lede">You watched the atmosphere turn light into signals. Meanwhile, the page turned this visit into signals — without asking for a sensitive permission.</p>
+          <p class="coda-boundary">This session only. Nothing is saved. Nothing is sent. Reloading erases it.</p>
         </div>
-
         <div class="trace-deck" aria-live="polite">
           <article class="trace-card" data-testid="trace-card" data-trace-card="0">
-            <p class="trace-card-number">01 / TIME</p>
-            <h3>A visit became a timeline.</h3>
+            <p class="trace-card-number">01 / TIME</p><h3>A visit became a timeline.</h3>
             <p class="trace-hero" data-trace="elapsed">0 seconds</p>
-            <p class="trace-copy">
-              The page can measure how long this tab has been open without knowing your name.
-            </p>
-            <p class="trace-micro">
-              <span data-trace="resizes">0</span> resizes ·
-              <span data-trace="visibility">0</span> tab visibility changes
-            </p>
+            <p class="trace-copy">The page can measure how long this tab has been open without knowing your name.</p>
+            <p class="trace-micro"><span data-trace="resizes">0</span> resizes · <span data-trace="visibility">0</span> tab visibility changes</p>
           </article>
-
           <article class="trace-card" data-testid="trace-card" data-trace-card="1" hidden>
-            <p class="trace-card-number">02 / GESTURE</p>
-            <h3>One slider became behaviour.</h3>
+            <p class="trace-card-number">02 / GESTURE</p><h3>One slider became behaviour.</h3>
             <p class="trace-hero"><span data-trace="moves">0</span> state changes</p>
             <dl class="trace-facts">
-              <div><dt>range explored</dt><dd data-trace="range">45° → 45°</dd></div>
-              <div><dt>input modes</dt><dd data-trace="modes">none yet</dd></div>
-              <div><dt>pointer moves</dt><dd data-trace="pointer-moves">0</dd></div>
-              <div><dt>clicks</dt><dd data-trace="clicks">0</dd></div>
-              <div><dt>key presses</dt><dd data-trace="keys">0</dd></div>
+              <div><dt>range explored</dt><dd data-trace="range">45° → 45°</dd></div><div><dt>input modes</dt><dd data-trace="modes">none yet</dd></div>
+              <div><dt>pointer moves</dt><dd data-trace="pointer-moves">0</dd></div><div><dt>clicks</dt><dd data-trace="clicks">0</dd></div><div><dt>key presses</dt><dd data-trace="keys">0</dd></div>
             </dl>
           </article>
-
           <article class="trace-card" data-testid="trace-card" data-trace-card="2" hidden>
-            <p class="trace-card-number">03 / ENVIRONMENT</p>
-            <h3>Your browser spoke before you typed.</h3>
+            <p class="trace-card-number">03 / ENVIRONMENT</p><h3>Your browser spoke before you typed.</h3>
             <dl class="trace-facts trace-facts-wide">
-              <div><dt>viewport</dt><dd data-trace="viewport">—</dd></div>
-              <div><dt>pixel ratio</dt><dd data-trace="pixels">—</dd></div>
-              <div><dt>language</dt><dd data-trace="language">—</dd></div>
-              <div><dt>language stack</dt><dd data-trace="languages">—</dd></div>
-              <div><dt>time zone</dt><dd data-trace="timezone">—</dd></div>
-              <div><dt>colour depth</dt><dd data-trace="colour-depth">—</dd></div>
-              <div><dt>touch points</dt><dd data-trace="touch">—</dd></div>
-              <div><dt>CPU hint</dt><dd data-trace="cores">—</dd></div>
-              <div><dt>memory hint</dt><dd data-trace="memory">—</dd></div>
-              <div><dt>connection hint</dt><dd data-trace="connection">—</dd></div>
-              <div><dt>privacy signals</dt><dd data-trace="privacy">—</dd></div>
-              <div><dt>display preference</dt><dd data-trace="display">—</dd></div>
+              <div><dt>viewport</dt><dd data-trace="viewport">—</dd></div><div><dt>pixel ratio</dt><dd data-trace="pixels">—</dd></div>
+              <div><dt>language</dt><dd data-trace="language">—</dd></div><div><dt>language stack</dt><dd data-trace="languages">—</dd></div>
+              <div><dt>time zone</dt><dd data-trace="timezone">—</dd></div><div><dt>colour depth</dt><dd data-trace="colour-depth">—</dd></div>
+              <div><dt>touch points</dt><dd data-trace="touch">—</dd></div><div><dt>CPU hint</dt><dd data-trace="cores">—</dd></div>
+              <div><dt>memory hint</dt><dd data-trace="memory">—</dd></div><div><dt>connection hint</dt><dd data-trace="connection">—</dd></div>
+              <div><dt>privacy signals</dt><dd data-trace="privacy">—</dd></div><div><dt>display preference</dt><dd data-trace="display">—</dd></div>
             </dl>
-            <p class="trace-copy">
-              Most of these are coarse browser hints, not account data. They are still enough to narrow down what kind of device and context is visiting.
-            </p>
+            <p class="trace-copy">Most of these are coarse browser hints, not account data. They are still enough to narrow down what kind of device and context is visiting.</p>
           </article>
-
           <article class="trace-card trace-card-zero" data-testid="trace-card" data-trace-card="3" hidden>
-            <p class="trace-card-number">04 / BOUNDARY</p>
-            <h3>What this prototype refused to collect.</h3>
-            <div class="zero-grid">
-              <p><strong>0</strong><span>permission prompts</span></p>
-              <p><strong>0</strong><span>trace uploads</span></p>
-              <p><strong>0</strong><span>saved records</span></p>
-            </div>
-            <p class="trace-copy">
-              No camera, microphone, location, cookies, analytics, or persistent fingerprint.
-            </p>
+            <p class="trace-card-number">04 / BOUNDARY</p><h3>What this prototype refused to collect.</h3>
+            <div class="zero-grid"><p><strong>0</strong><span>permission prompts</span></p><p><strong>0</strong><span>trace uploads</span></p><p><strong>0</strong><span>saved records</span></p></div>
+            <p class="trace-copy">No camera, microphone, location, cookies, analytics, or persistent fingerprint.</p>
           </article>
-
           <nav class="trace-nav" aria-label="Session trace slides">
-            <button type="button" data-trace-previous>Previous signal</button>
-            <output data-trace="progress" aria-live="off">1 / 4</output>
-            <button type="button" data-trace-next>Next signal</button>
+            <button type="button" data-trace-previous>Previous signal</button><output data-trace="progress" aria-live="off">1 / 4</output><button type="button" data-trace-next>Next signal</button>
           </nav>
         </div>
-
-        <footer class="coda-footer">
-          <button class="coda-return" type="button" data-trace-return>Return to the light</button>
-          <button class="coda-erase" type="button" data-trace-erase>Erase this trace</button>
-        </footer>
+        <footer class="coda-footer"><button class="coda-return" type="button" data-trace-return>Return to the light</button><button class="coda-erase" type="button" data-trace-erase>Erase this trace</button></footer>
       </div>
     </section>
   </main>

@@ -30,11 +30,7 @@ const previous = document.querySelector<HTMLButtonElement>("[data-trace-previous
 const next = document.querySelector<HTMLButtonElement>("[data-trace-next]");
 const returnButton = document.querySelector<HTMLButtonElement>("[data-trace-return]");
 const eraseButton = document.querySelector<HTMLButtonElement>("[data-trace-erase]");
-const sunParts = [
-  document.querySelector<HTMLElement>('[data-testid="atmosphere"]'),
-  document.querySelector<HTMLElement>(".overlay"),
-  document.querySelector<HTMLElement>('[data-testid="rail"]'),
-].filter((part): part is HTMLElement => part !== null);
+const sunExperience = document.querySelector<HTMLElement>('[data-testid="experience-shell"]');
 
 function initialTrace(elevation: number): SessionTrace {
   return {
@@ -117,11 +113,10 @@ function renderTrace(trace: SessionTrace): void {
 }
 
 function setSunUnavailable(unavailable: boolean): void {
-  for (const part of sunParts) {
-    part.toggleAttribute("inert", unavailable);
-    if (unavailable) part.setAttribute("aria-hidden", "true");
-    else part.removeAttribute("aria-hidden");
-  }
+  if (!sunExperience) return;
+  sunExperience.toggleAttribute("inert", unavailable);
+  if (unavailable) sunExperience.setAttribute("aria-hidden", "true");
+  else sunExperience.removeAttribute("aria-hidden");
 }
 
 function setCard(index: number): number {

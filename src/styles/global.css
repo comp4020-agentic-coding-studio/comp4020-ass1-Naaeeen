@@ -1,1265 +1,363 @@
-*,
-*::before,
-*::after {
+:root {
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizelegibility;
+}
+
+* {
   box-sizing: border-box;
+}
+
+html {
+  min-width: 20rem;
+  background: #080e0b;
 }
 
 body {
-  margin: 0;
-  font-family: system-ui, sans-serif;
-  line-height: 1.6;
-  color: #f4f1ea;
-  background: #0c120d;
-}
-
-/* Available to assistive tech and to tests, absent from the picture. Used to
-   name each spectrum band, so the reading never rests on hue alone. */
-.visually-hidden {
-  position: absolute;
-  overflow: hidden;
-  clip-path: inset(50%);
-  width: 1px;
-  height: 1px;
-  white-space: nowrap;
-}
-
-/* The stage is the complete experience: it fills the viewport and holds both
-   the illustration and the instrument rail. The elevation state arrives here
-   as custom properties and inherits into the children below.
-
-   `--u` is the scene's one length unit. Everything geometric is a multiple of
-   it, so the whole illustration scales together and the ratio between two
-   elevation states is identical at every viewport size. It is clamped by
-   width as well as height so the low Sun cannot run off a narrow screen. */
-.stage {
-  /* Below the two-column breakpoint the rail stacks and grows tall, so the sky
-     is short and the unit has to be smaller or the overhead Sun runs into the
-     header. Wide layouts get the larger unit back further down. */
-  --u: min(0.85vh, 1.95vw);
-  --observer-x: 22%;
-  --observer-y: 84%;
-  --ground: #101711;
-
-  position: relative;
-  min-height: 100vh;
-  min-height: 100svh;
+  min-width: 20rem;
   min-height: 100dvh;
-  background: var(--sky-color, rgb(144 150 184));
-}
-
-/* The scene unit follows the same dynamic viewport the stage is sized in, so
-   the geometry and its container agree when mobile browser chrome appears or
-   retracts. Declared separately because a second `--u` in the block above
-   would be a duplicate declaration. */
-@supports (height: 1dvh) {
-  .stage {
-    --u: min(0.85dvh, 1.95vw);
-  }
-}
-
-/* The illustrated atmosphere. Clipping here is part of the illustration —
-   light and scattered packets are meant to run off the edges of the sky, not
-   spill into document layout. */
-.atmosphere {
-  position: relative;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  background-color: var(--sky-color, rgb(144 150 184));
-  background-image:
-    radial-gradient(
-      76% 55% at 52% 92%,
-      color-mix(in srgb, var(--sun-color, rgb(255 200 157)) 18%, transparent) 0%,
-      transparent 72%
-    ),
-    radial-gradient(90% 68% at 78% 18%, rgb(255 255 255 / 12%) 0%, transparent 66%),
-    radial-gradient(
-      120% 80% at 50% 100%,
-      rgb(0 0 0 / 36%) 0%,
-      rgb(0 0 0 / 0%) 62%
-    ),
-    linear-gradient(to bottom, rgb(4 10 18 / 27%) 0%, rgb(0 0 0 / 0%) 54%);
-  box-shadow:
-    inset 0 0 11vw rgb(5 8 11 / 20%),
-    inset 0 -10vh 12vh rgb(255 226 191 / 8%);
-}
-
-/* ---- shells of air ---------------------------------------------------- */
-
-/* Concentric arcs centred below the horizon, so their tops sweep across the
-   sky. A shallow route crosses several; a steep one punches through the
-   nearest. They also give the upper sky something to be. */
-.air-shells {
-  position: absolute;
-  inset: 0;
-}
-
-/* Each shell is a thin arc with a faint wash inside it, so the upper sky reads
-   as stacked depth rather than blank gradient, and a shallow route visibly
-   crosses more of them than a steep one does. */
-.air-shell {
-  position: absolute;
-  bottom: 13%;
-  left: 50%;
-  width: calc((128 + var(--shell) * 64) * 1%);
-  height: calc((30 + var(--shell) * 30) * 1%);
-  translate: -50% 0;
-  border: 1px solid rgb(255 255 255 / 22%);
-  border-bottom-color: transparent;
-  border-radius: 50%;
-  background: radial-gradient(
-    100% 100% at 50% 100%,
-    rgb(255 255 255 / 7%) 0%,
-    rgb(255 255 255 / 0%) 72%
-  );
-  opacity: calc(0.34 + 0.66 * var(--scatter-strength, 0.6));
-}
-
-/* Depth near the ground, so the lower sky reads as thicker air. */
-.haze {
-  position: absolute;
-  right: 0;
-  bottom: 13%;
-  left: 0;
-  height: 54%;
-  background: linear-gradient(
-    to top,
-    color-mix(in srgb, var(--sky-color, rgb(144 150 184)) 66%, white) 0%,
-    color-mix(in srgb, var(--sky-color, rgb(144 150 184)) 86%, white) 40%,
-    rgb(255 255 255 / 0%) 100%
-  );
-  opacity: calc(0.2 + 0.36 * var(--scatter-strength, 0.6));
-}
-
-/* ---- the light route -------------------------------------------------- */
-
-.beam-anchor {
-  position: absolute;
-  top: var(--observer-y);
-  left: var(--observer-x);
-  width: 0;
-  height: 0;
-}
-
-/* One rotation for the whole system. +x runs along the route toward the Sun. */
-.beam-frame {
-  position: absolute;
-  top: 0;
-  left: 0;
-  rotate: calc(-1 * var(--beam-angle, 44deg));
-}
-
-/* Two layers rather than one tube: a wide soft halo and a thin bright core, so
-   the beam reads as a shaft of light with structure instead of a blur. */
-.beam-soft {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: calc(var(--beam-len, 49) * var(--u));
-  height: calc(2.6 * var(--u));
-  translate: 0 -50%;
-  border-radius: 999px;
-  background: linear-gradient(
-    to right,
-    color-mix(in srgb, var(--sun-color, rgb(255 200 157)) 62%, white) 0%,
-    var(--sun-color, rgb(255 200 157)) 100%
-  );
-  opacity: calc(0.14 + 0.2 * var(--transmit-strength, 0.6));
-  filter: blur(calc(0.9 * var(--u)));
-}
-
-.beam-core {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: calc(var(--beam-len, 49) * var(--u));
-  height: calc(0.34 * var(--u));
-  translate: 0 -50%;
-  border-radius: 999px;
-  background: linear-gradient(
-    to right,
-    color-mix(in srgb, var(--sun-color, rgb(255 200 157)) 80%, white) 0%,
-    color-mix(in srgb, var(--sun-color, rgb(255 200 157)) 96%, white) 100%
-  );
-  opacity: calc(0.4 + 0.5 * var(--transmit-strength, 0.6));
-}
-
-/* The stretch of air the light has to cross: anchored at the eye, growing
-   outward, visibly longer when the Sun is low. */
-.atmos-path {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: calc(var(--path-len, 30) * var(--u));
-  height: calc(4.4 * var(--u));
-  translate: 0 -50%;
-  border-radius: 999px;
-  background: linear-gradient(
-    to right,
-    rgb(255 255 255 / 4%) 0%,
-    rgb(255 255 255 / 17%) 42%,
-    rgb(255 255 255 / 5%) 100%
-  );
-  outline: 1px solid rgb(255 255 255 / 10%);
-  outline-offset: 0;
-}
-
-/* Ambient fine structure along the crossing. Deliberately subordinate now —
-   the packets below carry the explanation. */
-.scattering {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 100%;
-  height: 0;
-}
-
-.scatter-mark {
-  position: absolute;
-  top: 0;
-  left: calc(var(--along) * 100%);
-  width: calc((1.4 + 2.6 * var(--reach)) * var(--u));
-  height: calc(0.2 * var(--u));
-  transform-origin: left center;
-  border-radius: 999px;
-  background: linear-gradient(
-    to right,
-    rgb(150 202 255 / 55%) 0%,
-    rgb(120 176 255 / 0%) 100%
-  );
-  rotate: calc(var(--side) * 52deg + var(--tilt));
-  translate: 0
-    calc(var(--side) * var(--reach) * var(--scatter-spread, 0.65) * 5 * var(--u));
-  opacity: calc(0.12 + 0.34 * var(--scatter-strength, 0.6));
-}
-
-/* ---- spectral packets -------------------------------------------------- */
-
-.packets {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 100%;
-  height: 0;
-}
-
-/* Each packet is one wavelength band travelling the route — a short luminous
-   trace rather than a dot, so it carries a direction as well as a colour. Its
-   resting place IS its final state, so a reduced-motion visitor and a still
-   screenshot both show the same distribution the pulse arrives at. */
-.packet {
-  position: absolute;
-  top: 0;
-  left: calc(var(--along) * 100%);
-  height: calc(0.52 * var(--u));
-  transform-origin: left center;
-  border-radius: 999px;
-  background: linear-gradient(
-    to right,
-    rgb(255 255 255 / 0%) 0%,
-    var(--tint) 46%,
-    rgb(255 255 255 / 0%) 100%
-  );
-  filter: blur(calc(0.12 * var(--u)));
-  translate: var(--rest-x, 0) var(--rest-y, 0);
-  rotate: var(--rest-r, 0deg);
-  opacity: var(--rest-o, 0.7);
-}
-
-/* Turned aside out of the beam: it leaves the route on a new heading and keeps
-   going, because scattered light is redirected, not destroyed. The trace points
-   the way it went. */
-.packet[data-scatters="true"] {
-  --rest-x: calc(var(--reach) * var(--scatter-spread, 0.65) * -1.6 * var(--u));
-  --rest-y: calc(
-    var(--side) * var(--reach) * var(--scatter-spread, 0.65) * 11 * var(--u)
-  );
-
-  /* A shallow branch angle so these read as light leaving the route, not as
-     vertical slivers sitting on top of it. */
-  --rest-r: calc(var(--side) * 33deg);
-  --rest-o: calc(0.32 + 0.6 * var(--scatter-strength, 0.6));
-
-  width: calc((4 + 4.2 * var(--reach)) * var(--u));
-  height: calc(0.46 * var(--u));
-}
-
-/* Carries on to the aperture. Resting positions are compressed toward the
-   arrival end, so the surviving light visibly gathers where it lands rather
-   than sitting evenly along the route. Brightness is this band's own survival,
-   so the warm end stays strong while the short end thins out. */
-.packet[data-scatters="false"] {
-  --rest-x: calc(var(--along) * var(--path-len, 30) * var(--u) * -0.52);
-  --rest-y: 0px;
-  --rest-r: 0deg;
-  --rest-o: calc(0.42 + 0.58 * var(--band-t, 0.6));
-
-  width: calc((5 + 3 * var(--reach)) * var(--u));
-  height: calc(0.78 * var(--u));
-}
-
-/* ---- Sun -------------------------------------------------------------- */
-
-/* The last stretch into the eye: what actually survived the crossing. Short,
-   and both dimmer and warmer when the Sun is low — this is the payoff of the
-   whole diagram, so it gets its own element rather than being implied. */
-.transmitted {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: calc(11 * var(--u));
-  height: calc(1.5 * var(--u));
-  translate: 0 -50%;
-  border-radius: 999px;
-  background: linear-gradient(
-    to left,
-    rgb(255 255 255 / 0%) 0%,
-    color-mix(
-        in srgb,
-        var(--sun-color, rgb(255 200 157))
-          calc(45% + 55% * var(--transmit-warmth, 0.3)),
-        white
-      )
-      82%
-  );
-  opacity: calc(0.32 + 0.66 * var(--transmit-strength, 0.6));
-}
-
-.sun-disc,
-.sun-bloom {
-  position: absolute;
-  top: 0;
-  left: calc(var(--beam-len, 49) * var(--u));
-  border-radius: 50%;
-  translate: -50% -50%;
-}
-
-.sun-disc {
-  width: clamp(2.2rem, 4.2vmin, 3.6rem);
-  aspect-ratio: 1;
-  background: var(--sun-color, rgb(255 200 157));
-  box-shadow: 0 0 calc(2.2 * var(--u)) calc(0.4 * var(--u)) rgb(255 255 255 / 22%);
-}
-
-.sun-bloom {
-  width: clamp(7rem, 21vmin, 17rem);
-  aspect-ratio: 1;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--sun-color, rgb(255 200 157)) 46%, transparent) 0%,
-    transparent 70%
-  );
-}
-
-/* ---- ground and receiver ---------------------------------------------- */
-
-/* Same colour as the rail below, so ground and instrument read as one mass
-   instead of a picture sitting on top of a form. */
-.horizon {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 13%;
-  background: var(--ground);
-  clip-path: polygon(
-    0% 42%,
-    12% 32%,
-    26% 44%,
-    38% 26%,
-    52% 38%,
-    64% 28%,
-    78% 42%,
-    90% 33%,
-    100% 43%,
-    100% 100%,
-    0% 100%
-  );
-}
-
-/* A collecting aperture, so the endpoint explains itself: a graduated rim, an
-   iris that takes the colour of what got through, and a core where it lands. */
-.receiver {
-  position: absolute;
-  top: var(--observer-y);
-  left: var(--observer-x);
-  width: calc(9.2 * var(--u));
-  aspect-ratio: 1;
-  translate: -50% -50%;
-}
-
-/* A graduated ring: the machined edge of an instrument, not an iris drawn on a
-   face. The tick marks come from a repeating conic gradient, so there is no
-   asset and nothing to load. */
-.receiver-rim {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
+  margin: 0;
+  overflow-x: clip;
+  color: #f4f0e7;
   background:
-    /* 1.8deg, not a hairline: at this radius a sub-degree arc lands under one
-       pixel and aliases into a uniform haze instead of countable graduations. */
-    repeating-conic-gradient(
-      from 0deg,
-      rgb(246 243 236 / 62%) 0deg 1.8deg,
-      rgb(246 243 236 / 0%) 1.8deg 15deg
-    ),
-    radial-gradient(circle, rgb(12 18 13 / 0%) 58%, rgb(12 18 13 / 42%) 72%);
-  box-shadow:
-    inset 0 0 0 1px rgb(246 243 236 / 42%),
-    0 0 calc(1.4 * var(--u)) rgb(12 18 13 / 40%);
+    radial-gradient(circle at 22% 8%, rgb(240 124 54 / 10%), transparent 34rem),
+    linear-gradient(145deg, #101812, #070b09 68%);
 }
 
-/* The collecting surface. Its tint is whatever survived the crossing, so the
-   arriving colour is legible right at the destination. */
-.receiver-iris {
-  position: absolute;
-  inset: 22%;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle at 50% 42%,
-    color-mix(
-        in srgb,
-        var(--sun-color, rgb(255 200 157)) calc(22% + 58% * var(--transmit-strength, 0.6)),
-        #0d1310
-      )
-      0%,
-    #0d1310 78%
-  );
-  box-shadow: inset 0 0 calc(1.2 * var(--u)) rgb(0 0 0 / 55%);
+button,
+input {
+  font: inherit;
 }
 
-/* Where the beam actually lands. Brightness and size both answer to how much
-   light got through, and this is the element the settle pulse flares. */
-.receiver-core {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: calc(1.5 * var(--u));
-  aspect-ratio: 1;
-  translate: -50% -50%;
-  border-radius: 50%;
-  background: color-mix(
-    in srgb,
-    var(--sun-color, rgb(255 200 157)) calc(40% + 60% * var(--transmit-strength, 0.6)),
-    white
-  );
-  opacity: calc(0.35 + 0.65 * var(--transmit-strength, 0.6));
-  box-shadow: 0 0 calc(2.2 * var(--u))
-    color-mix(
-      in srgb,
-      var(--sun-color, rgb(255 200 157)) calc(45% + 55% * var(--transmit-strength, 0.6)),
-      transparent
-    );
+button,
+a,
+input[type="range"] {
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* ---- model and received-light witness -------------------------------- */
-
-/* The payoff is duplicated at the destination as a physical swatch. Kept near
-   the aperture so the scene still reads causally, but bounded so it never
-   becomes the dominant information panel. */
-.received-colour {
-  position: absolute;
-  z-index: 3;
-  top: var(--observer-y);
-  left: var(--observer-x);
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-  max-width: 9.5rem;
-  translate: calc(5.9 * var(--u)) calc(1.55 * var(--u));
-  color: rgb(255 255 255 / 82%);
-  text-shadow: 0 1px 4px rgb(0 0 0 / 70%);
-  pointer-events: none;
+a {
+  color: inherit;
 }
 
-.received-swatch {
-  flex: 0 0 auto;
-  width: clamp(1.9rem, 4.2vmin, 3.4rem);
-  aspect-ratio: 1;
-  border: 1px solid rgb(255 255 255 / 55%);
-  border-radius: 50%;
-  background: var(--sun-color, rgb(255 200 157));
-  box-shadow:
-    0 0 0 0.22rem rgb(12 18 13 / 28%),
-    0 0 1.8rem var(--sun-color, rgb(255 200 157));
-}
+.stage {
+  --paper: #f4f0e7;
+  --muted: #aaa99f;
+  --line: rgb(244 240 231 / 14%);
+  --accent: #ff7134;
+  --observer-x: 21%;
+  --observer-y: 75%;
 
-.received-colour small,
-.received-colour strong {
-  display: block;
-}
-
-.received-colour small {
-  color: rgb(255 255 255 / 58%);
-  font-size: 0.56rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.received-colour strong {
-  margin-top: 0.1rem;
-  font-size: clamp(0.7rem, 1.05vmin, 0.82rem);
-  font-weight: 650;
-  line-height: 1.22;
-}
-
-/* The model is part of the instrument deck now, not an overlay lesson card.
-   It can still look deliberate, but it no longer competes with the sky for
-   the same coordinates. */
-.science-panel > .model-strip {
-  min-width: 0;
-  padding-top: 0.8rem;
-  border-top: 1px solid rgb(244 241 234 / 16%);
-  color: rgb(244 241 234 / 92%);
-}
-
-.model-kicker {
-  margin: 0 0 0.6rem;
-  color: rgb(244 241 234 / 66%);
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.model-strip ol {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 0.65rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.model-strip li {
-  min-width: 0;
-  padding-top: 0.55rem;
-  border-top: 1px solid rgb(244 241 234 / 13%);
-}
-
-.model-number {
-  display: block;
-  color: rgb(244 241 234 / 48%);
-  font-size: 0.62rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.11em;
-}
-
-.model-strip strong,
-.model-strip code,
-.model-strip small {
-  margin-top: 0.28rem;
-  color: rgb(244 241 234 / 74%);
-  font-size: clamp(0.7rem, 0.76vw, 0.8rem);
-  font-weight: 560;
-  line-height: 1.34;
-}
-
-.model-strip strong {
-  font-size: clamp(0.94rem, 1vw, 1.1rem);
-  font-weight: 760;
-  line-height: 1.12;
-}
-
-.model-strip output {
-  color: color-mix(in srgb, var(--sun-color, rgb(255 200 157)) 88%, white);
-  font-variant-numeric: tabular-nums;
-  font-weight: 780;
-}
-
-.model-strip code {
-  margin-top: 0.24rem;
-  color: rgb(244 241 234 / 92%);
-  font-family: ui-monospace, "Cascadia Mono", monospace;
-  font-size: clamp(0.74rem, 0.78vw, 0.84rem);
-  font-weight: 700;
-  line-height: 1.26;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-
-.model-strip small {
-  margin-top: 0.3rem;
-  color: rgb(244 241 234 / 74%);
-  font-size: clamp(0.82rem, 0.95vw, 0.98rem);
-  font-weight: 560;
-  line-height: 1.38;
-}
-
-.model-strip var {
-  font-style: italic;
-  font-weight: 700;
-}
-
-.model-strip sup,
-.model-strip sub {
-  font-size: 0.74em;
-}
-
-/* ---- in-scene labels -------------------------------------------------- */
-
-/* Two quiet annotations with a hairline leader, rather than underlined captions.
-   Small caps and low contrast keep them subordinate to the light itself. */
-.scene-label {
-  position: absolute;
-  margin: 0;
-  color: rgb(255 255 255 / 62%);
-  font-size: clamp(0.56rem, 0.92vmin, 0.7rem);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  text-shadow: 0 1px 3px rgb(0 0 0 / 55%);
-  white-space: nowrap;
-  pointer-events: none;
-}
-
-.scene-label::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  right: calc(100% + 0.45em);
-  width: calc(2.6 * var(--u));
-  height: 1px;
-  background: linear-gradient(to left, rgb(255 255 255 / 42%), rgb(255 255 255 / 0%));
-}
-
-/* Anchored to the eye and rising with the spread, so it sits among the turned-
-   aside packets at any elevation. Deliberately not inside the rotated beam
-   frame: a counter-rotation about a different origin relocates the box, which
-   at steep angles threw it off the top of the sky. */
-.scene-label-scatter {
-  top: var(--observer-y);
-  left: var(--observer-x);
-  translate: calc(3.6 * var(--u)) calc(-1 * var(--u) * (9 + 9 * var(--scatter-spread, 0.65)));
-  opacity: calc(0.24 + 0.76 * var(--scatter-strength, 0.6));
-}
-
-/* ---- instrument rail --------------------------------------------------- */
-
-.control-deck {
   position: relative;
-  z-index: 5;
-  flex-shrink: 0;
+  min-height: 100dvh;
 }
 
-/* Continuous with the ground above it: same colour family, but organised as a
-   deliberate instrument deck rather than a pile of floating readouts. */
-.rail {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  width: min(100%, 88rem);
-  margin-inline: auto;
-  gap: 0.9rem;
-  padding: clamp(0.75rem, 1.6vh, 1.35rem) clamp(1rem, 3vw, 2.5rem);
-  padding-bottom: max(clamp(0.75rem, 1.6vh, 1.35rem), env(safe-area-inset-bottom));
-  border-top: 1px solid rgb(244 241 234 / 13%);
-  background:
-    radial-gradient(circle at 14% 0%, rgb(255 207 146 / 8%), transparent 34%),
-    linear-gradient(105deg, #0b130e, #101c15 58%, #0b120e);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 3%),
-    0 -1.5rem 4rem rgb(5 10 7 / 28%);
-}
-
-.rail-primary,
-.rail-sidecar,
-.science-panel {
-  min-width: 0;
-}
-
-.rail-primary {
-  display: grid;
-  gap: 0.7rem;
-}
-
-.science-panel {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-content: start;
-  gap: clamp(0.7rem, 1.5vh, 0.95rem);
-}
-
-.rail-control {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 0.75rem;
-}
-
-.rail-control label {
-  flex-shrink: 0;
-  color: rgb(244 241 234 / 62%);
-  font-size: 0.68rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.rail input[type="range"] {
-  flex: 1 1 11rem;
-  min-width: 9rem;
-  max-width: 30rem;
-  height: 2.75rem;
-  margin: 0;
-  appearance: none;
-  background: transparent;
-  accent-color: var(--sun-color, rgb(255 200 157));
-}
-
-.rail input[type="range"]::-webkit-slider-runnable-track {
-  height: 2px;
-  border-radius: 999px;
-  background: linear-gradient(
-    to right,
-    color-mix(in srgb, var(--sun-color, rgb(255 200 157)) 70%, transparent) 0%,
-    rgb(244 241 234 / 48%) 100%
-  );
-}
-
-.rail input[type="range"]::-moz-range-track {
-  height: 2px;
-  border-radius: 999px;
-  background: linear-gradient(
-    to right,
-    color-mix(in srgb, var(--sun-color, rgb(255 200 157)) 70%, transparent) 0%,
-    rgb(244 241 234 / 48%) 100%
-  );
-}
-
-.rail input[type="range"]::-webkit-slider-thumb {
-  box-sizing: border-box;
-  width: 0.95rem;
-  height: 0.95rem;
-  margin-top: calc((2px - 0.95rem) / 2);
-  appearance: none;
-  border: 2px solid #0d1310;
-  border-radius: 50%;
-  background: var(--sun-color, rgb(255 200 157));
-  box-shadow: 0 0 0 1px rgb(244 241 234 / 55%);
-}
-
-.rail input[type="range"]::-moz-range-thumb {
-  width: 0.95rem;
-  height: 0.95rem;
-  border: 2px solid #0d1310;
-  border-radius: 50%;
-  background: var(--sun-color, rgb(255 200 157));
-  box-shadow: 0 0 0 1px rgb(244 241 234 / 55%);
-}
-
-.rail input[type="range"]:focus-visible {
-  outline: 3px solid #f4f1ea;
-  outline-offset: 2px;
-  border-radius: 6px;
-}
-
-@media (forced-colors: active) {
-  .rail input[type="range"] {
-    appearance: auto;
-  }
-}
-
-.rail-end {
-  display: none;
-  flex-shrink: 0;
-  color: rgb(244 241 234 / 42%);
-  font-size: 0.62rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-@media (width >= 78rem) {
-  .rail-end {
-    display: inline;
-  }
-}
-
-.rail-value {
-  flex-shrink: 0;
-  min-width: 3ch;
-  color: var(--sun-color, rgb(255 200 157));
-  font-variant-numeric: tabular-nums;
-  font-size: 0.95rem;
-}
-
-.rail-output {
-  color: rgb(244 241 234 / 88%);
-  font-size: clamp(0.84rem, 1.08vw, 1rem);
-  line-height: 1.45;
-  text-wrap: pretty;
-}
-
-.rail-note {
-  margin: 0;
-  color: rgb(244 241 234 / 48%);
-  font-size: 0.72rem;
-}
-
-.rail-sidecar > .arrival {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  min-width: 0;
-  margin: 0;
-}
-
-.arrival-caption {
-  color: rgb(244 241 234 / 62%);
-  font-size: 0.68rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.arrival-ribbon {
-  display: flex;
-  align-items: flex-end;
-  height: clamp(2.2rem, 4.4vh, 3.8rem);
-  min-height: 1.9rem;
-  border-bottom: 1px solid rgb(244 241 234 / 34%);
-}
-
-.arrival-band {
-  position: relative;
-  flex: 1;
-  height: 100%;
-}
-
-.arrival-band + .arrival-band .arrival-band-fill::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 1px;
-  background: rgb(12 18 13 / 45%);
-}
-
-.arrival-band-fill {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 100%;
-  transform-origin: bottom center;
-  background: linear-gradient(
-    to top,
-    var(--tint) 0%,
-    color-mix(in srgb, var(--tint) 55%, transparent) 100%
-  );
-  scale: 1 var(--band-t, 0.6);
-}
-
-.arrival-scale {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 0.1rem 0.75rem;
-  min-width: 0;
-  color: rgb(244 241 234 / 52%);
-  font-size: 0.62rem;
-}
-
-
-/* ---- adaptive experience architecture ---------------------------------
-   The page has three durable layout domains: a responsive hero shell, a
-   self-contained atmosphere field, and a document-flow instrument deck.
-   Scene geometry is absolute only inside the atmosphere; explanatory copy
-   and controls never get teleported into that coordinate system. */
-
-.stage-shell {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto minmax(22rem, 52svh);
+.experience-shell {
   width: min(100%, 112rem);
   margin-inline: auto;
-  container-type: inline-size;
-  container-name: experience-shell;
-  background: var(--sky-color, rgb(144 150 184));
+  padding: clamp(1rem, 2.6vw, 2.6rem);
 }
 
-.stage-shell > .overlay {
-  position: relative;
-  z-index: 4;
-  grid-column: 1;
-  grid-row: 1;
-  width: 100%;
-  max-width: none;
+.control-deck {
+  display: grid;
+  gap: clamp(1.4rem, 3vw, 3rem);
   min-width: 0;
-  padding: max(1.1rem, env(safe-area-inset-top))
-    max(1rem, env(safe-area-inset-right)) 1.35rem
-    max(1rem, env(safe-area-inset-left));
-  text-shadow: 0 1px 4px rgb(7 10 12 / 42%);
-  pointer-events: none;
 }
 
-.stage-shell > .overlay nav {
-  pointer-events: auto;
+.simulation-pane,
+.explanation-pane {
+  min-width: 0;
 }
 
-.stage-shell > .overlay nav a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.75rem;
-  padding-block: 0.25rem;
-  border-bottom: 1px solid rgb(255 255 255 / 32%);
-  color: rgb(255 255 255 / 76%);
-  font-size: 0.68rem;
-  font-weight: 720;
-  letter-spacing: 0.14em;
+.hero-copy {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.45rem 1rem;
+  align-items: end;
+  margin-bottom: clamp(1rem, 2vw, 1.6rem);
+}
+
+.hero-copy nav {
+  grid-column: 1 / -1;
+  margin-bottom: clamp(0.7rem, 2vw, 1.4rem);
+}
+
+.hero-copy nav a {
+  display: inline-block;
+  padding-block: 0.3rem;
+  border-bottom: 1px solid rgb(244 240 231 / 45%);
+  color: rgb(244 240 231 / 82%);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
   text-decoration: none;
   text-transform: uppercase;
 }
 
-.stage-shell > .overlay nav a:hover {
-  border-color: currentcolor;
-  color: white;
+.hero-copy nav a:hover {
+  border-color: var(--accent);
+  color: #fff;
 }
 
-.stage-shell > .overlay nav a:focus-visible {
-  border-color: transparent;
-  outline: 3px solid white;
-  outline-offset: 3px;
-  color: white;
+:where(.hero-copy nav a, .trace-aperture, .trace-nav button, .coda-footer button):focus-visible {
+  outline: 3px solid #fff8e8;
+  outline-offset: 4px;
 }
 
-.hero-kicker {
-  margin: 1.6rem 0 0;
-  color: rgb(255 255 255 / 68%);
-  font-size: clamp(0.66rem, 1.7vw, 0.78rem);
-  font-weight: 700;
+.hero-kicker,
+.reading-kicker,
+.arrival-caption,
+.control-heading label,
+.model-number {
+  color: #d7c3ab;
+  font-size: clamp(0.65rem, 1.1vw, 0.76rem);
+  font-weight: 720;
   letter-spacing: 0.15em;
   text-transform: uppercase;
 }
 
-.stage-shell > .overlay h1 {
-  max-width: 11ch;
-  margin: 0.55rem 0 0;
-  font-size: clamp(2.45rem, 12vw, 4.35rem);
-  font-weight: 760;
-  line-height: 0.92;
-  letter-spacing: -0.058em;
+.hero-kicker {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.hero-copy h1 {
+  max-width: 13ch;
+  margin: 0;
+  font-size: clamp(2.25rem, 6.4vw, 5.6rem);
+  font-weight: 690;
+  line-height: 0.9;
+  letter-spacing: -0.055em;
   text-wrap: balance;
+  text-shadow: 0 0.12em 0.3em rgb(0 0 0 / 28%);
 }
 
-.stage-shell > .overlay .instruction {
-  max-width: 24ch;
-  margin-top: 0.9rem;
-  font-size: clamp(0.98rem, 3.8vw, 1.12rem);
+.instruction {
+  max-width: 17rem;
+  margin: 0;
+  color: rgb(244 240 231 / 75%);
+  font-size: clamp(0.92rem, 1.4vw, 1.12rem);
   line-height: 1.45;
+  text-align: right;
 }
 
-.stage-shell > .atmosphere {
+.bench-wrap {
   position: relative;
-  z-index: 1;
-  grid-column: 1;
-  grid-row: 2;
-  min-width: 0;
-  min-height: clamp(22rem, 52svh, 34rem);
+  isolation: isolate;
+  width: 100%;
+  aspect-ratio: 5 / 3;
   overflow: hidden;
+  border: 1px solid rgb(244 240 231 / 18%);
+  border-radius: clamp(0.8rem, 1.6vw, 1.35rem);
+  background: #315f91;
+  box-shadow:
+    0 1.8rem 5rem rgb(0 0 0 / 28%),
+    inset 0 1px 0 rgb(255 255 255 / 18%);
 }
 
-.stage-shell .horizon-reveal {
+.optical-bench {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.bench-sky {
+  fill: url("#sky-depth");
+}
+
+.atmospheric-shells {
+  fill: none;
+  stroke: rgb(255 255 255 / 11%);
+  stroke-width: 2;
+}
+
+.atmospheric-shells path:nth-child(even) {
+  stroke-opacity: 0.55;
+}
+
+.bench-horizon {
+  fill: #0a160f;
+  stroke: rgb(255 220 171 / 14%);
+  stroke-width: 2;
+}
+
+.bench-ray {
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+.bench-ray-soft {
+  stroke: url("#beam-light");
+  filter: url("#soft-glow");
+}
+
+.bench-ray-core {
+  stroke: #fffbe6;
+  filter: url("#small-glow");
+}
+
+.bench-path {
+  stroke: #ffd08f;
+  filter: url("#soft-glow");
+}
+
+.bench-transmitted {
+  stroke: var(--sun-color);
+  filter: url("#small-glow");
+}
+
+.bench-scattering line {
+  stroke: #86b9ff;
+  stroke-linecap: round;
+  filter: url("#small-glow");
+}
+
+.bench-packet {
+  stroke-linecap: round;
+  filter: url("#small-glow");
+}
+
+.bench-sun-bloom {
+  fill: url("#sun-halo");
+  filter: url("#soft-glow");
+}
+
+.bench-sun-disc {
+  stroke: rgb(255 255 255 / 70%);
+  stroke-width: 3;
+  filter: url("#small-glow");
+}
+
+.bench-receiver .receiver-aura {
+  fill: rgb(255 241 215 / 10%);
+  stroke: rgb(255 241 215 / 40%);
+  stroke-width: 2;
+}
+
+.bench-receiver .receiver-ring {
+  fill: rgb(15 22 18 / 58%);
+  stroke: #fff8e8;
+  stroke-width: 5;
+}
+
+.bench-receiver .receiver-body {
+  fill: #09100c;
+  stroke: rgb(255 255 255 / 25%);
+  stroke-width: 3;
+}
+
+.bench-receiver .receiver-lens {
+  fill: #fffdf1;
+  filter: url("#small-glow");
+}
+
+.bench-receiver line {
+  stroke: rgb(255 248 232 / 88%);
+  stroke-width: 2;
+}
+
+.bench-received-halo {
+  fill: var(--sun-color);
+  opacity: 0.12;
+  filter: url("#soft-glow");
+}
+
+.bench-received circle[data-bench-received-swatch] {
+  stroke: rgb(255 255 255 / 82%);
+  stroke-width: 3;
+}
+
+.bench-received text,
+.bench-caption {
+  fill: rgb(255 255 255 / 70%);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.13em;
+}
+
+.bench-received-strong {
+  fill: #fff !important;
+  font-size: 17px !important;
+  font-weight: 700;
+  letter-spacing: 0 !important;
+}
+
+.bench-caption {
+  font-size: 13px;
+}
+
+.trace-aperture {
   position: absolute;
   z-index: 5;
-  top: calc(100% + 1.25rem);
-  right: max(1rem, env(safe-area-inset-right));
-  left: max(1rem, env(safe-area-inset-left));
-  width: auto;
-  max-width: 31rem;
-  margin-inline: auto;
-  translate: 0 calc((1 - var(--horizon-reveal, 0)) * 0.7rem);
-  text-align: center;
-  opacity: var(--horizon-reveal, 0);
-}
-
-.stage-shell .horizon-reveal p {
-  margin: 0;
-  font-size: clamp(1.35rem, 6vw, 2.35rem);
-  line-height: 0.98;
-}
-
-.stage-shell .horizon-reveal span {
-  font-size: clamp(0.64rem, 2.2vw, 0.82rem);
-}
-
-.stage-shell .received-colour {
-  max-width: min(9rem, 34vw);
-}
-
-/* The rail owns all reading and control UI. It may grow vertically on a
-   compact device; the page scrolls normally instead of shrinking text to
-   force an entire lesson into one viewport. */
-.stage > .control-deck {
-  position: relative;
-  z-index: 6;
-  width: 100%;
-  border-top: 1px solid rgb(244 241 234 / 14%);
-  background:
-    radial-gradient(circle at 12% 0%, rgb(255 190 118 / 8%), transparent 32rem),
-    linear-gradient(112deg, #0a110d, #101a13 58%, #0a100c);
-  box-shadow: 0 -1.8rem 4rem rgb(5 9 7 / 24%);
-  container-type: inline-size;
-  container-name: instrument-deck;
-}
-
-.control-deck .rail {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: clamp(1rem, 3vw, 1.6rem);
-  width: min(100%, 96rem);
-  margin-inline: auto;
-  padding: clamp(1.15rem, 3.8vw, 2rem)
-    max(1rem, env(safe-area-inset-right))
-    max(1.25rem, env(safe-area-inset-bottom))
-    max(1rem, env(safe-area-inset-left));
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-.rail-primary,
-.rail-sidecar,
-.science-panel,
-.rail-control,
-.physics-disclosure,
-.physics-disclosure .model-strip {
-  min-width: 0;
-}
-
-.control-deck .rail-primary {
-  display: grid;
-  gap: 0.9rem;
-}
-
-.control-deck .rail-control {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 0.25rem 0.85rem;
-}
-
-.control-deck .rail-control label {
-  grid-column: 1 / -1;
-  font-size: 0.72rem;
-  font-weight: 720;
-  letter-spacing: 0.13em;
-}
-
-.control-deck .rail input[type="range"] {
-  grid-column: 1;
-  width: 100%;
-  min-width: 0;
-  max-width: none;
-  height: 2.75rem;
-}
-
-.control-deck .rail-value {
-  grid-column: 2;
-  min-width: 3ch;
-  font-size: 1.15rem;
-  font-weight: 720;
-}
-
-.control-deck .rail-end {
-  display: none;
-}
-
-.control-deck .rail-output {
-  max-width: 66ch;
-  color: rgb(244 241 234 / 92%);
-  font-size: clamp(0.98rem, 2.8vw, 1.18rem);
-  line-height: 1.55;
-  overflow-wrap: break-word;
-  text-wrap: pretty;
-}
-
-.control-deck .rail-note {
-  max-width: 72ch;
-  font-size: clamp(0.7rem, 2vw, 0.8rem);
-  line-height: 1.45;
-}
-
-.rail-sidecar {
-  padding-top: 1rem;
-  border-top: 1px solid rgb(244 241 234 / 12%);
-}
-
-.rail-sidecar .science-panel {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 1rem;
-}
-
-.control-deck .arrival {
-  position: relative;
-  inset: auto;
-  z-index: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  width: 100%;
-  min-width: 0;
-  margin: 0;
-  text-shadow: none;
-}
-
-.science-panel .arrival-caption {
-  font-size: 0.72rem;
-  font-weight: 720;
-  letter-spacing: 0.13em;
-}
-
-.science-panel .arrival-ribbon {
-  height: clamp(3.3rem, 12vw, 4.6rem);
-}
-
-.science-panel .arrival-scale {
-  gap: 0.25rem 1rem;
-  font-size: 0.68rem;
-}
-
-.physics-disclosure {
-  border-top: 1px solid rgb(244 241 234 / 14%);
-}
-
-.physics-disclosure > summary {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 0.75rem;
-  min-height: 2.75rem;
-  padding-block: 0.7rem;
-  color: rgb(244 241 234 / 92%);
-  cursor: pointer;
-  list-style-position: inside;
-}
-
-.physics-disclosure > summary::marker {
-  color: var(--sun-color, rgb(255 200 157));
-}
-
-.physics-disclosure > summary:focus-visible {
-  outline: 3px solid #f4f1ea;
-  outline-offset: 3px;
-}
-
-.control-deck .physics-disclosure > summary span {
-  font-size: 0.88rem;
-  font-weight: 740;
-}
-
-.physics-disclosure > summary small {
-  color: rgb(244 241 234 / 52%);
-  font-size: 0.65rem;
-  letter-spacing: 0.08em;
-  text-align: right;
-  text-transform: uppercase;
-}
-
-.science-panel .model-strip {
-  position: relative;
-  inset: auto;
-  width: 100%;
-  margin: 0;
-  padding: 0.8rem 0 0;
-  border-top: 1px solid rgb(244 241 234 / 10%);
-}
-
-.model-kicker,
-.model-number,
-.physics-disclosure .model-strip strong,
-.physics-disclosure .model-strip code,
-.physics-disclosure .model-strip small {
-  display: block;
-}
-
-.physics-disclosure .model-strip ol {
-  grid-template-columns: minmax(0, 1fr);
-  gap: 0.85rem;
-}
-
-.physics-disclosure .model-strip li {
-  padding-top: 0.75rem;
-}
-
-.physics-disclosure .model-strip strong {
-  font-size: clamp(0.98rem, 2.8vw, 1.08rem);
-}
-
-.physics-disclosure .model-strip code {
-  font-size: clamp(0.76rem, 2.3vw, 0.86rem);
-}
-
-.physics-disclosure .model-strip small {
-  font-size: clamp(0.78rem, 2.4vw, 0.92rem);
-  line-height: 1.5;
-}
-
-/* Restore the aperture's discoverability and the local-only privacy coda as
-   an independent viewport overlay. These are interaction states, not layout
-   breakpoints, so their role never changes across device classes. */
-.trace-aperture {
+  top: 76.1%;
+  left: 20.83%;
+  width: clamp(2.75rem, 8.2%, 5.5rem);
+  aspect-ratio: 1;
   padding: 0;
   border: 0;
+  border-radius: 50%;
+  translate: -50% -50%;
   color: inherit;
   background: transparent;
-  font: inherit;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
 }
 
-.trace-aperture:focus-visible {
-  outline: 3px solid #fff8e8;
-  outline-offset: calc(0.7 * var(--u));
+.trace-focus-ring {
+  position: absolute;
+  inset: 8%;
+  border: 1px solid transparent;
   border-radius: 50%;
 }
 
-.trace-aperture:hover .receiver-rim,
-.trace-aperture:focus-visible .receiver-rim,
-.stage.is-trace-ready .receiver-rim {
-  filter: brightness(1.35);
-  scale: 1.06;
+.trace-aperture:hover .trace-focus-ring,
+.trace-aperture:focus-visible .trace-focus-ring,
+.stage.is-trace-ready .trace-focus-ring {
+  border-color: rgb(255 248 232 / 82%);
+  box-shadow: 0 0 1.4rem rgb(255 216 154 / 42%);
 }
 
 .receiver-hint {
   position: absolute;
-  bottom: calc(100% + 0.65rem);
+  bottom: calc(100% + 0.25rem);
   left: 50%;
   width: max-content;
-  max-width: 10rem;
-  translate: -50% 0;
-  color: rgb(255 255 255 / 76%);
-  font-size: clamp(0.54rem, 1.7vw, 0.68rem);
-  letter-spacing: 0.13em;
+  max-width: 9rem;
+  translate: -50% 0.2rem;
+  color: rgb(255 255 255 / 82%);
+  font-size: 0.58rem;
+  font-weight: 680;
+  letter-spacing: 0.12em;
+  line-height: 1.3;
   text-align: center;
   text-transform: uppercase;
   opacity: 0;
+  pointer-events: none;
 }
 
 .stage.is-trace-ready .receiver-hint,
 .trace-aperture:hover .receiver-hint,
 .trace-aperture:focus-visible .receiver-hint {
-  translate: -50% -0.25rem;
+  translate: -50% 0;
   opacity: 1;
 }
 
 .portal-field {
   position: absolute;
   inset: 0;
-  z-index: 19;
+  z-index: 4;
   overflow: hidden;
   pointer-events: none;
 }
 
 .portal-particle {
   position: absolute;
-  top: var(--observer-y);
-  left: var(--observer-x);
+  top: 76.1%;
+  left: 20.83%;
   width: var(--size);
   aspect-ratio: 1;
   border-radius: 50%;
-  background: var(--sun-color, #ffd3a4);
-  box-shadow: 0 0 1.2rem currentcolor;
+  background: var(--sun-color);
+  box-shadow: 0 0 1rem currentcolor;
   opacity: 0;
 }
 
@@ -1274,26 +372,299 @@ body {
   background: #83b6ff;
 }
 
+.sun-control {
+  margin-top: 1rem;
+  padding: clamp(0.9rem, 1.8vw, 1.25rem);
+  border: 1px solid var(--line);
+  border-radius: 0.8rem;
+  background: rgb(255 255 255 / 4%);
+}
+
+.control-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.65rem;
+}
+
+.control-heading label {
+  color: var(--paper);
+}
+
+.rail-value {
+  color: var(--accent);
+  font-family: ui-monospace, "Cascadia Mono", monospace;
+  font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.sun-control input[type="range"] {
+  width: 100%;
+  min-height: 2.75rem;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: ew-resize;
+}
+
+.sun-control input[type="range"]:focus-visible {
+  outline: 3px solid #fff8e8;
+  outline-offset: 3px;
+}
+
+.control-scale {
+  display: flex;
+  justify-content: space-between;
+  color: rgb(244 240 231 / 50%);
+  font-size: 0.64rem;
+  font-weight: 650;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.explanation-pane {
+  align-self: start;
+  padding: clamp(1.2rem, 2.3vw, 2rem);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: rgb(13 22 16 / 88%);
+  box-shadow: 0 1.5rem 5rem rgb(0 0 0 / 20%);
+}
+
+.reading-head {
+  padding-bottom: clamp(1.2rem, 2.5vw, 2rem);
+  border-bottom: 1px solid var(--line);
+}
+
+.reading-kicker {
+  margin: 0 0 0.7rem;
+}
+
+.rail-output {
+  display: block;
+  max-width: 42ch;
+  color: #f7f1e5;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.2rem, 2.1vw, 1.7rem);
+  line-height: 1.45;
+}
+
+.horizon-reveal {
+  display: grid;
+  gap: 0.25rem;
+  max-height: 8rem;
+  margin: 0 0 1rem;
+  padding: 0.8rem 0.9rem;
+  border-left: 3px solid var(--accent);
+  color: #fff7e8;
+  background: rgb(255 113 52 / 9%);
+  opacity: var(--horizon-reveal);
+}
+
+.horizon-reveal strong {
+  font-size: 1rem;
+}
+
+.horizon-reveal span {
+  color: rgb(244 240 231 / 65%);
+  font-size: 0.8rem;
+}
+
+.horizon-reveal[aria-hidden="true"] {
+  max-height: 0;
+  margin: 0;
+  padding-block: 0;
+  border-width: 0;
+  overflow: hidden;
+}
+
+.rail {
+  display: grid;
+  gap: clamp(1.25rem, 2.7vw, 2.2rem);
+  margin-top: clamp(1.25rem, 2.7vw, 2.2rem);
+}
+
+.arrival {
+  min-width: 0;
+  margin: 0;
+}
+
+.arrival-caption {
+  margin-bottom: 0.75rem;
+}
+
+.arrival-ribbon {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-items: end;
+  gap: 0.32rem;
+  height: 5rem;
+  padding-top: 0.3rem;
+  border-bottom: 1px solid rgb(244 240 231 / 32%);
+}
+
+.arrival-band {
+  display: flex;
+  align-items: end;
+  height: 100%;
+}
+
+.arrival-band-fill {
+  display: block;
+  width: 100%;
+  min-height: 0.18rem;
+  height: calc(var(--band-t) * 100%);
+  border-radius: 0.18rem 0.18rem 0 0;
+  background: var(--tint);
+  box-shadow: 0 0 1rem color-mix(in srgb, var(--tint), transparent 55%);
+}
+
+.arrival-scale {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.45rem;
+  color: rgb(244 240 231 / 53%);
+  font-size: 0.67rem;
+}
+
+.received-colour {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  background: rgb(255 255 255 / 3%);
+}
+
+.received-swatch {
+  width: 2.7rem;
+  aspect-ratio: 1;
+  flex: 0 0 auto;
+  border: 2px solid rgb(255 255 255 / 75%);
+  border-radius: 50%;
+  background: var(--sun-color);
+  box-shadow: 0 0 1.4rem color-mix(in srgb, var(--sun-color), transparent 40%);
+}
+
+.received-colour small,
+.received-colour strong {
+  display: block;
+}
+
+.received-colour small {
+  color: var(--muted);
+  font-size: 0.65rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.received-colour strong {
+  margin-top: 0.2rem;
+  font-size: 0.92rem;
+}
+
+.science-panel {
+  padding-top: clamp(1.2rem, 2.5vw, 2rem);
+  border-top: 1px solid var(--line);
+}
+
+.science-heading h2 {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.6vw, 2.1rem);
+  font-weight: 650;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+}
+
+.model-strip {
+  display: grid;
+  gap: 0;
+  margin: 1.2rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.model-strip li {
+  display: grid;
+  gap: 0.42rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.model-number {
+  color: var(--accent);
+  font-size: 0.62rem;
+}
+
+.model-strip strong {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.98rem;
+}
+
+.model-strip output {
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.model-strip code {
+  overflow-wrap: anywhere;
+  color: #fff8ea;
+  font-family: ui-monospace, "Cascadia Mono", monospace;
+  font-size: clamp(0.78rem, 1.5vw, 0.98rem);
+  font-weight: 650;
+  line-height: 1.55;
+}
+
+.model-strip small {
+  color: rgb(244 240 231 / 64%);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.rail-note {
+  margin: 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  color: rgb(244 240 231 / 48%);
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The coda deliberately changes visual language: a flat editorial trace report. */
 .footprint-coda {
-  --paper: #e9e8e2;
-  --ink: #16171b;
-  --signal: #e94f37;
-  --electric: #465aff;
+  --coda-paper: #e9e8e2;
+  --coda-ink: #16171b;
+  --coda-signal: #e94f37;
+  --coda-electric: #465aff;
 
   position: fixed;
   inset: 0;
   z-index: 20;
   overflow-y: auto;
-  color: var(--ink);
+  color: var(--coda-ink);
   background:
     radial-gradient(circle at 82% 14%, rgb(70 90 255 / 13%), transparent 28%),
     radial-gradient(circle at 15% 88%, rgb(233 79 55 / 12%), transparent 24%),
-    var(--paper);
+    var(--coda-paper);
   clip-path: circle(0 at var(--observer-x) var(--observer-y));
   opacity: 0;
-  transition:
-    clip-path 0.72s cubic-bezier(0.76, 0, 0.24, 1),
-    opacity 0.18s linear;
 }
 
 .footprint-coda[hidden],
@@ -1327,10 +698,7 @@ body {
   width: min(100%, 92rem);
   min-height: 100%;
   margin-inline: auto;
-  padding: max(1rem, env(safe-area-inset-top))
-    max(1rem, env(safe-area-inset-right))
-    max(1rem, env(safe-area-inset-bottom))
-    max(1rem, env(safe-area-inset-left));
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
 }
 
 .coda-header {
@@ -1369,7 +737,7 @@ body {
 }
 
 .coda-index {
-  color: var(--signal);
+  color: var(--coda-signal);
 }
 
 .coda-intro h2 {
@@ -1415,13 +783,13 @@ body {
   justify-content: center;
   min-height: 18rem;
   padding: clamp(1rem, 4vw, 2rem);
-  border-top: 0.32rem solid var(--signal);
+  border-top: 0.32rem solid var(--coda-signal);
   background: rgb(255 255 255 / 60%);
   box-shadow: 0 1.4rem 4rem rgb(22 23 27 / 10%);
 }
 
 .trace-card-number {
-  color: var(--signal);
+  color: var(--coda-signal);
 }
 
 .trace-card h3 {
@@ -1435,7 +803,7 @@ body {
 
 .trace-hero {
   margin: auto 0;
-  color: var(--electric);
+  color: var(--coda-electric);
   font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(3.2rem, 15vw, 7.4rem);
   line-height: 0.9;
@@ -1468,7 +836,7 @@ body {
 }
 
 .trace-facts div,
-.footprint-coda .zero-grid p {
+.zero-grid p {
   min-width: 0;
   margin: 0;
   padding-top: 0.7rem;
@@ -1493,20 +861,20 @@ body {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.footprint-coda .zero-grid strong,
-.stage .footprint-coda .zero-grid span {
+.zero-grid strong,
+.zero-grid span {
   display: block;
 }
 
-.footprint-coda .zero-grid strong {
-  color: var(--signal);
+.zero-grid strong {
+  color: var(--coda-signal);
   font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(2.8rem, 10vw, 5rem);
   font-weight: 400;
   line-height: 1;
 }
 
-.stage .footprint-coda .zero-grid span {
+.zero-grid span {
   color: rgb(22 23 27 / 58%);
   font-size: 0.65rem;
   letter-spacing: 0.07em;
@@ -1522,14 +890,14 @@ body {
 }
 
 .trace-nav button,
-.footprint-coda .coda-footer button {
+.coda-footer button {
+  min-width: var(--coda-button-min, 0);
   min-height: 2.75rem;
   padding: 0.6rem 0;
   border: 0;
   border-bottom: 1px solid currentcolor;
-  color: var(--ink);
+  color: var(--coda-ink);
   background: transparent;
-  font: inherit;
   font-size: 0.7rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1555,13 +923,9 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-.trace-nav button:focus-visible,
-.footprint-coda .coda-footer button:focus-visible {
-  outline: 3px solid var(--electric);
-  outline-offset: 3px;
-}
-
 .coda-footer {
+  --coda-button-min: min(10rem, 100%);
+
   grid-area: footer;
   display: flex;
   flex-wrap: wrap;
@@ -1569,93 +933,44 @@ body {
   gap: 0.8rem 1.25rem;
 }
 
-.stage .footprint-coda .coda-footer button {
-  min-width: min(10rem, 100%);
-}
 
 .coda-erase {
-  color: var(--signal) !important;
+  color: var(--coda-signal) !important;
 }
 
-@media (width >= 48rem) {
-  .rail-primary {
-    grid-template-columns: minmax(18rem, 0.85fr) minmax(0, 1.15fr);
-    align-items: start;
-    gap: 0.8rem clamp(1.5rem, 4vw, 3rem);
+@media (width >= 44rem) and (width <= 69.99rem) {
+  .model-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
   }
 
-  .rail-note {
-    grid-column: 1 / -1;
+  .model-strip li {
+    align-content: start;
   }
-
-  .arrival-ribbon {
-    height: clamp(3.8rem, 7vw, 5rem);
-  }
-  .trace-facts-wide { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (width >= 70rem) {
-  .stage {
-    --observer-x: 36%;
-    --u: min(1.02dvh, 1vw);
+  .experience-shell {
+    min-height: 100dvh;
   }
 
-  .stage-shell {
-    grid-template-areas: "stage";
-    grid-template-rows: minmax(36rem, 72svh);
-    min-height: 36rem;
+  .control-deck {
+    grid-template-columns: minmax(0, 3fr) minmax(23rem, 2fr);
+    align-items: start;
   }
 
-  .stage-shell > .overlay,
-  .stage-shell > .atmosphere {
-    grid-area: stage;
+  .simulation-pane {
+    position: sticky;
+    top: clamp(1rem, 2.6vw, 2.6rem);
+    align-self: start;
   }
 
-  .stage-shell > .overlay {
-    align-self: stretch;
-    width: min(29rem, 31vw);
-    height: 100%;
-    padding: clamp(1.6rem, 2.6vw, 2.6rem);
+  .hero-copy h1 {
+    font-size: clamp(3rem, 4.5vw, 5.3rem);
   }
 
-  .hero-kicker { margin-top: clamp(2rem, 4vh, 3.5rem); }
-
-  .stage-shell > .overlay h1 {
-    max-width: 9ch;
-    font-size: clamp(3.2rem, 4.8vw, 5.35rem);
-  }
-
-  .stage-shell > .overlay .instruction {
-    max-width: 19ch;
-    font-size: clamp(1rem, 1.25vw, 1.18rem);
-  }
-
-  .stage-shell > .atmosphere {
-    min-height: 36rem;
-  }
-
-  .stage-shell .horizon-reveal {
-    inset: auto auto clamp(2rem, 6vh, 4.5rem) clamp(1.6rem, 2.6vw, 2.6rem);
-    width: min(24rem, 27vw);
-    margin: 0;
-    text-align: left;
-  }
-
-  .stage-shell .horizon-reveal p {
-    font-size: clamp(1.6rem, 2.3vw, 2.8rem);
-  }
-
-  .control-deck .rail {
-    grid-template-columns: minmax(0, 1.4fr) minmax(20rem, 0.6fr);
-    gap: clamp(1.5rem, 3vw, 3rem);
-    padding-block: clamp(1.4rem, 2.5vh, 2rem);
-  }
-
-  .rail-sidecar {
-    padding-top: 0;
-    padding-left: clamp(1.2rem, 2vw, 2rem);
-    border-top: 0;
-    border-left: 1px solid rgb(244 241 234 / 12%);
+  .explanation-pane {
+    margin-top: 4.8rem;
   }
 
   .coda-shell {
@@ -1679,35 +994,39 @@ body {
   }
 }
 
-@media (width < 24rem) {
-  .stage-shell > .overlay h1 {
-    font-size: clamp(2.2rem, 12vw, 3rem);
+@media (width <= 43.99rem) {
+  .experience-shell {
+    padding: 0.85rem;
   }
 
-  .stage-shell > .atmosphere {
-    min-height: 21rem;
+  .hero-copy {
+    grid-template-columns: 1fr;
   }
 
-  .received-colour {
-    max-width: 7rem;
+  .hero-copy h1 {
+    max-width: 12ch;
   }
 
-  .receiver-hint {
-    max-width: 7rem;
-    white-space: normal;
-  }
-
-  .physics-disclosure > summary {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.15rem;
-  }
-
-  .physics-disclosure > summary small {
+  .instruction {
+    max-width: none;
     text-align: left;
   }
 
-  .coda-local {
-    display: none;
+  .bench-wrap {
+    border-radius: 0.7rem;
+  }
+
+  .bench-caption,
+  .bench-received text {
+    opacity: 0;
+  }
+
+  .sun-control {
+    padding: 0.85rem;
+  }
+
+  .explanation-pane {
+    padding: 1rem;
   }
 
   .trace-facts-wide {
@@ -1715,216 +1034,95 @@ body {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .footprint-coda,
+@media (width <= 23rem) {
+  .hero-copy h1 {
+    font-size: 2.15rem;
+  }
+
+  .hero-kicker {
+    font-size: 0.6rem;
+  }
+
+  .coda-local {
+    display: none;
+  }
+}
+
+.stage.is-scrubbing .optical-bench *,
+.stage.is-scrubbing .arrival-band-fill,
+.stage.is-scrubbing .received-swatch {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .footprint-coda {
+    transition: clip-path 0.72s cubic-bezier(0.76, 0, 0.24, 1), opacity 0.18s linear;
+  }
+
   .receiver-hint,
-  .receiver-rim {
-    transition: none;
-  }
-}
-
-
-/* ---- motion ----------------------------------------------------------- */
-
-/* While scrubbing, state tracks the slider. These short settles only smooth
-   the hand-off; nothing animates on its own clock, and no layout property is
-   animated. */
-@media (prefers-reduced-motion: no-preference) {
-  .beam-frame {
-    transition: rotate 0.2s ease-out;
-  }
-
-  .beam-soft,
-  .beam-core,
-  .atmos-path,
-  .transmitted,
-  .scatter-mark,
-  .haze,
-  .air-shell,
-  .packet,
-  .receiver-iris,
-  .receiver-core {
-    transition:
-      opacity 0.2s ease-out,
-      translate 0.2s ease-out,
-      background 0.2s ease-out;
-  }
-
-  .arrival-band-fill {
-    transition: scale 0.24s ease-out;
-  }
-
-  /* It rises with the scatter spread, so its offset eases like everything else
-     driven by state. No rotation any more — it left the beam frame. */
-  .scene-label-scatter {
-    transition:
-      opacity 0.2s ease-out,
-      translate 0.2s ease-out;
-  }
-
-  .atmosphere,
-  .sun-disc,
-  .sun-bloom {
-    transition: background 0.2s ease-out;
-  }
-
-  /* Direct manipulation must track the pointer, rather than easing toward
-     a trail of stale states. The resting transitions return after release. */
-  .stage.is-scrubbing .beam-frame,
-  .stage.is-scrubbing .beam-soft,
-  .stage.is-scrubbing .beam-core,
-  .stage.is-scrubbing .atmos-path,
-  .stage.is-scrubbing .transmitted,
-  .stage.is-scrubbing .scatter-mark,
-  .stage.is-scrubbing .haze,
-  .stage.is-scrubbing .air-shell,
-  .stage.is-scrubbing .packet,
-  .stage.is-scrubbing .receiver-iris,
-  .stage.is-scrubbing .receiver-core,
-  .stage.is-scrubbing .arrival-band-fill,
-  .stage.is-scrubbing .scene-label-scatter,
-  .stage.is-scrubbing .atmosphere,
-  .stage.is-scrubbing .sun-disc,
-  .stage.is-scrubbing .sun-bloom {
-    transition: none;
-  }
-
-  /* The explanatory pulse: one run, on settle only, driven by a class the
-     script adds and removes. It may highlight the current state, but never
-     invents a different geometric starting state. */
-  .stage.is-pulsing .atmos-path {
-    animation: path-emphasis 620ms ease-in-out both;
-  }
-
-  .stage.is-pulsing .packet {
-    animation: packet-run 620ms cubic-bezier(0.22, 0.68, 0.24, 1) both;
-    animation-delay: calc(var(--delay) * 150ms);
-  }
-
-  /* The ending: light lands, the aperture answers, then the reading settles.
-     Both finish on their resting declarations, so a cancelled pulse leaves
-     nothing displaced. */
-  .stage.is-pulsing .receiver-core {
-    animation: core-receive 620ms ease-out both;
-    animation-delay: 260ms;
-  }
-
-  .stage.is-pulsing .arrival-band-fill {
-    animation: band-settle 620ms ease-out both;
-    animation-delay: calc(300ms + var(--i) * 26ms);
-  }
-
-  @keyframes path-emphasis {
-    0%,
-    100% {
-      opacity: 1;
-    }
-
-    45% {
-      opacity: 0.72;
-    }
-  }
-
-  /* Light feedback fades in where the current model placed it; it never
-     jumps back to an invented origin after the slider changes. */
-  @keyframes packet-run {
-    0% {
-      translate: var(--rest-x, 0) var(--rest-y, 0);
-      opacity: 0;
-    }
-
-    22% {
-      opacity: calc(0.5 + 0.5 * var(--rest-o, 0.7));
-    }
-
-    100% {
-      translate: var(--rest-x, 0) var(--rest-y, 0);
-      opacity: var(--rest-o, 0.7);
-    }
-  }
-
-  @keyframes core-receive {
-    0% {
-      scale: 1;
-      opacity: calc(0.35 + 0.65 * var(--transmit-strength, 0.6));
-    }
-
-    38% {
-      scale: 1.85;
-      opacity: 1;
-    }
-
-    100% {
-      scale: 1;
-      opacity: calc(0.35 + 0.65 * var(--transmit-strength, 0.6));
-    }
-  }
-
-  @keyframes band-settle {
-    0% {
-      opacity: 0.58;
-    }
-
-    100% {
-      opacity: 1;
-    }
-  }
-}
-
-
-@media (prefers-reduced-motion: no-preference) {
-  .receiver-rim {
-    transition:
-      filter 0.24s ease,
-      scale 0.24s ease;
+  .trace-focus-ring,
+  .arrival-band-fill,
+  .horizon-reveal {
+    transition: opacity 0.2s ease-out, translate 0.2s ease-out, box-shadow 0.2s ease-out, height 0.2s ease-out;
   }
 
   .stage.is-portal-opening .portal-particle {
-    animation: portal-flight 0.88s cubic-bezier(0.18, 0.72, 0.24, 1) both;
+    animation: portal-burst 0.9s cubic-bezier(0.18, 0.8, 0.24, 1) both;
     animation-delay: var(--delay);
   }
 
-  .trace-card:not([hidden]) {
-    animation: trace-card-arrive 0.42s cubic-bezier(0.22, 0.68, 0.24, 1) both;
+  .stage.is-pulsing .bench-packet {
+    animation: signal-pulse 0.62s ease-out both;
+  }
+}
+
+@keyframes portal-burst {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3);
   }
 
-  @keyframes portal-flight {
-    0% {
-      transform: translate(-50%, -50%) rotate(0deg) scale(0.2);
-      opacity: 0;
-    }
-
-    16% {
-      opacity: 1;
-    }
-
-    100% {
-      transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0.05);
-      opacity: 0;
-    }
+  22% {
+    opacity: 0.9;
   }
 
-  @keyframes trace-card-arrive {
-    0% {
-      transform: translateY(1rem);
-      opacity: 0;
-    }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) rotate(var(--rot)) scale(1.2);
+  }
+}
 
-    100% {
-      transform: translateY(0);
-      opacity: 1;
-    }
+@keyframes signal-pulse {
+  0%,
+  100% {
+    filter: url("#small-glow");
+  }
+
+  45% {
+    filter: url("#small-glow") brightness(1.45);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .footprint-coda,
-  .receiver-hint,
-  .receiver-rim {
-    transition: none;
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .bench-wrap,
+  .explanation-pane,
+  .sun-control,
+  .received-colour {
+    border: 1px solid CanvasText;
   }
 
-  .portal-particle {
-    display: none;
+  .trace-aperture {
+    border: 2px solid ButtonText;
   }
 }

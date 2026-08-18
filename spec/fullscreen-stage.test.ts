@@ -45,7 +45,7 @@ describe('full-screen stage: structure and semantics', () => {
 
   it('keeps the output, note, and equations visible in the explanation pane', () => {
     const pane = doc.querySelector('[data-testid="explanation-pane"]');
-    const note = pane?.querySelector('[data-testid="model-note"]');
+    const note = pane?.querySelector('[data-testid="model-note"]') ?? null;
 
     expect(pane?.querySelector('#explanation')).toBeTruthy();
     expect(pane?.querySelectorAll('[data-testid="model-equation"]').length).toBe(3);

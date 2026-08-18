@@ -196,6 +196,10 @@ stack or brief:
   here; this file carries only the standing rules.
 - The artefact is a full-screen atmospheric explainer, not a small form or
   card page.
+- The atmosphere field is reserved for the scene itself. The spectrum readout
+  and the three-step science model belong to the rail's instrument deck,
+  stacking on narrow screens and docking to the rail on wide ones; don't float
+  them as independent absolute panels over the sky.
 - No new mechanic, permission, or heavy rendering dependency (Canvas, WebGL,
   a 3D or animation library) without an explicit scope or architecture gate
   first --- never as an incidental addition mid-slice.
@@ -209,8 +213,10 @@ stack or brief:
   reduced motion must reach the identical information without particle travel.
 - Visual acceptance needs measured boxes and screenshots from the production
   build, not a source reading. Both marking viewports (1920×1080, 390×844),
-  keyboard-only operation, resize mid-use, and reduced-motion parity are
-  blocking checks, not nice-to-haves.
+  the 320px reflow floor, a short laptop, and an ultrawide stress case are
+  blocking checks. Resize mid-use must preserve the current elevation and
+  coda state; keyboard, coarse-pointer, and reduced-motion paths must retain
+  the same information.
 - If a responsive/layout bug appears in a major UI slice, do not start by
   nudging isolated top/right/width values. First inspect the production build
   in a real browser, name the colliding regions, and decide whether the failure
@@ -218,12 +224,23 @@ stack or brief:
   the same absolute-positioned space, fix the structure before polishing the
   art.
 - For this repo specifically, absolute positioning is reserved for the physical
-  illustration layer. The title, model strip, spectrum readout, control rail,
-  and explanatory text must be laid out by grid/flex containers with bounded
-  sizes, so they can reflow independently across widths and heights.
-- Breakpoints are content-driven. Do not write desktop/tablet/phone rules from
-  device names or copied dimensions; use the viewport matrix in PLAN.md only
-  as evidence that the chosen structure survives real stress cases.
+  illustration layer. The page has stable scene, HUD, and rail regions; an
+  element may not change semantic/layout role at a breakpoint (for example, a
+  rail child must not be teleported into the sky with `position: absolute`).
+  Narrative text, equations, spectrum, control, and explanation use bounded
+  grid/flex flow and may not compete with the Sun/beam collision domain.
+- Breakpoints are content-driven and only rearrange whole regions. Use media
+  queries for macro composition and container queries for local typography or
+  panel treatment. Do not accumulate isolated coordinate fixes per device.
+- The desktop scene may be a one-viewport composition. The compact layout is
+  allowed to scroll vertically: preserve an intentional reading order and put
+  deeper physics after the core scene/control instead of shrinking every item
+  to force the whole lesson into `100dvh`. Horizontal reading scroll remains a
+  blocking failure.
+- Responsive tests assert semantic region ownership and visitor-visible browser
+  relationships. Do not lock exact CSS declarations or breakpoint literals
+  with regexes; those tests reward patch accumulation while missing a broken
+  composition.
 - After a resume, a compaction, or any context loss, re-read `PLAN.md`,
   `git status`, and recent `git log` before acting. Never reconstruct a lost
   instruction from memory --- ask instead.

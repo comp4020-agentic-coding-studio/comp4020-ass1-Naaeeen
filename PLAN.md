@@ -153,6 +153,39 @@ still fails under real viewport variation because too many narrative elements
 share one absolute-positioned stage. The rescue is structural, not a round of
 coordinate nudges.
 
+#### Architecture decision — region shell, not duplicated pages
+
+Two approaches were evaluated after the failed browser audit:
+
+- **A — one stable region shell (chosen):** one DOM and one elevation state,
+  partitioned into an illustration region, HUD/story region, instrument rail,
+  and the existing coda overlay. Breakpoints rearrange whole regions while
+  container queries adapt their internals.
+- **B — separate desktop and compact DOMs (rejected):** easier to art-direct in
+  isolation, but duplicates headings, IDs, controls, accessible descriptions,
+  and state consumers. It creates two experiences that can silently drift and
+  makes resize-mid-use brittle.
+
+The chosen shell has these durable roles:
+
+- **scene region:** atmosphere, Sun, path, packets, aperture, horizon, and the
+  received-colour witness; illustration geometry may be absolute inside it
+- **HUD region:** title, instruction, horizon conclusion, and one concise
+  dynamic scientific signal
+- **rail region:** the labelled range, current value, spectrum, explanation,
+  and model limitation note
+- **physics disclosure:** equations and supporting explanation in normal flow;
+  it may dock beside the scene when space permits, but never becomes an
+  independently positioned object inside the atmosphere
+- **coda overlay:** a sibling layer with its own responsive layout, never part
+  of the Sun composition grid
+
+This corrects the earlier false constraint that every phone element had to fit
+inside a fixed `100dvh`. On compact screens the core interaction stays early
+and coherent, but deeper science may continue below the fold in normal vertical
+flow. WCAG reflow permits vertical scrolling; compressing text until it is
+unreadable is not a responsive solution.
+
 Rules for this rescue:
 
 - Breakpoints follow content pressure, not device labels. The browser matrix is
@@ -166,6 +199,9 @@ Rules for this rescue:
 - Desktop polish may use staged overlap and negative space. Phone and narrow
   portrait layouts must degrade to a readable single-column reading path rather
   than trying to preserve the desktop composition.
+- Science uses progressive disclosure: the causal claim and current signal are
+  always visible; the three equations and longer explanation remain available
+  without competing with the simulation at every size.
 - No horizontal scrolling for reading the page's text or operating the control.
 - Fluid sizing must be bounded. Large text, panels, and scene objects use
   clamp()/min()/max() or equivalent bounds rather than raw viewport-sized
@@ -174,6 +210,9 @@ Rules for this rescue:
   and explanatory panels are not sized directly from viewport height.
 - Hover-only affordances are optional polish. Every essential control and
   reveal remains legible and operable for coarse pointers and keyboard use.
+- Resizing across a composition boundary must preserve the elevation, the
+  explanation it produces, and whether the coda is open. A breakpoint changes
+  layout only, never meaning or state.
 
 The verification matrix for this rescue is:
 
@@ -237,6 +276,15 @@ secondary to the scene.
 The items above are a required inventory: each must be present and
 identifiable in the rendered page. Everything in "What the browser audit
 rejected" is *direction* — judged by a person at review, not measured.
+
+The science readouts are part of the instrument deck, not free-floating lesson
+cards in the sky. The arrival spectrum and the three-step causal model may be
+styled richly, but on every viewport they belong to the rail's information
+cluster so the atmosphere field remains an atmosphere field rather than a
+collision between scene and documentation. Wide layouts may dock that cluster
+to the rail's right side; narrow layouts stack it below the control. What is
+forbidden is a large, absolute-positioned teaching panel or spectrum readout
+floating independently over the sky.
 
 ### Motion contract
 
@@ -311,24 +359,30 @@ visual hierarchy.
 
 Measured (pass/fail):
 
-- The stage's width is at least 98% of `window.innerWidth`.
-- The stage's height is at least 98% of `window.innerHeight`.
-- The atmosphere field occupies at least 55% of the stage's height.
-- The rail, control, instruction, and explanation are all usable with no
-  scrolling required.
-- No overflow: `document.documentElement.scrollWidth <= window.innerWidth + 1`
-  and `document.documentElement.scrollHeight <= window.innerHeight + 2`.
+- The stage uses normal vertical flow with `min-height: 100svh`; it must not
+  impose a fixed height that crushes or clips its children.
+- The first viewport presents the title, instruction, atmosphere, labelled
+  control, and current value as one understandable interaction. Supporting
+  equations may follow below it.
+- The atmosphere remains a substantial visual region (at least 42svh and at
+  least 20rem tall) rather than collapsing behind the rail.
+- No horizontal overflow:
+  `document.documentElement.scrollWidth <= window.innerWidth + 1`. Vertical
+  scrolling is allowed and expected for deeper physics content.
 - The control's bounding box clears the bottom safe-area inset.
-- At 0°, 45°, and 90°: no text or rail box intersects the Sun, beam, or
-  observer box. Overlap *between* atmospheric layers is by design and is not
-  a collision.
+- At 0°, 45°, and 90°: no HUD, rail, spectrum, equation, or explanatory text
+  intersects the Sun, beam, or observer box. Overlap *between* atmospheric
+  layers is by design and is not a collision.
 - Layout survives mobile browser-chrome resize — use `dvh`/`svh` and
   `env(safe-area-inset-*)`, not naive `100vh` alone.
+- At 320 CSS pixels wide, every heading, equation, control, and action remains
+  available in a single-column reading path without two-dimensional scrolling.
 
 Judged at review: that the phone composition reads as deliberate rather than
 as a form, and that the title stays compact.
 
-Both overflow checks are evaluated at the normal marking zoom level (100%).
+Overflow checks are evaluated at the normal marking zoom level (100%), plus the
+320px reflow case.
 Do not reach for a global `overflow: hidden` to make them pass — that hides
 a broken layout instead of fixing it, and it would also mask real overflow
 from a marker.
@@ -356,6 +410,10 @@ and is not offered as a physical quantity.
 
 ### What automated tests can and cannot settle
 
+The responsive suite therefore checks stable region ownership and accessible
+content, not exact CSS strings. A real-browser matrix owns widths, heights,
+overlap, overflow, state-preserving resize, and screenshots. A test that merely
+finds a media query or one hard-coded width is not evidence of responsiveness.
 jsdom cannot judge visual quality, layout, or animation. Pure derivation
 maths and semantic DOM structure belong in automated tests; composition,
 motion, and perceived quality require production-browser evidence. A source
@@ -380,6 +438,27 @@ or built-HTML check is never presented as proof of rendered behaviour.
   judgement made at review against the motion rules above, not a measured
   budget — don't report it as a measured pass
 - one read-only adversarial visual/accessibility review
+
+### Responsive architecture correction — 2026-08-18
+
+The post-deployment audit found that the previous checks reported zero box
+collisions while the screenshots still showed broken hierarchy, tiny science
+copy, and layouts that stretched or compressed badly. The sensor had sampled
+the wrong relationships. This correction is deliberately recorded before the
+source rewrite:
+
+15. `harness: define the adaptive region architecture`
+    Done when: this region contract replaces the fixed-phone-height assumption,
+    `CLAUDE.md` prevents semantic role switching, and no source file changes.
+16. `refactor: rebuild the adaptive experience shell`
+    Done when: a test-first region contract goes red in the working tree, the
+    implementation returns it and the full suite to green, and the browser
+    matrix passes 320/390/692/1024/1366/1920/2560 widths without horizontal
+    overflow or cross-region collisions.
+17. `fix: harden the privacy coda across composition changes`
+    Done when: opening, navigating, erasing, returning, and resizing the coda
+    preserve state and remain usable at phone, short-laptop, and ultrawide
+    viewports. If verification finds no defect, do not manufacture this commit.
 
 ## Commit sequence — one approval gate per commit
 

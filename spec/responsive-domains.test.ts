@@ -23,6 +23,15 @@ describe("responsive domains: the reading path is split from the art", () => {
     );
   });
 
+  it("ships a dedicated simulation-pane with one optical-bench SVG", () => {
+    const panes = doc.querySelectorAll('[data-testid="simulation-pane"]');
+    expect(panes.length, "expected one simulation-pane layout region").toBe(1);
+    expect(
+      panes[0].querySelectorAll('svg[data-testid="optical-bench"]').length,
+      "the simulation pane should contain one scalable SVG optical bench",
+    ).toBe(1);
+  });
+
   it("ships a separate science-panel region for the equations/model", () => {
     const panels = doc.querySelectorAll('[data-testid="science-panel"]');
     expect(panels.length, "expected one science-panel layout region").toBe(1);
@@ -30,6 +39,10 @@ describe("responsive domains: the reading path is split from the art", () => {
       panels[0].querySelectorAll('[data-testid="airmass-model"]').length,
       "the science panel should contain the model strip",
     ).toBe(1);
+    expect(
+      panels[0].querySelectorAll('[data-testid="model-equation"]').length,
+      "the science panel should show all three equations without disclosure",
+    ).toBe(3);
   });
 
   it("ships a separate control-deck region for the instrument readout", () => {

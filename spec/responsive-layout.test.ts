@@ -10,6 +10,7 @@ describe("responsive layout domains", () => {
     const atmosphere = doc.querySelector('[data-testid="atmosphere"]');
 
     expect(atmosphere).toBeTruthy();
+    expect(atmosphere?.querySelector('svg[data-testid="optical-bench"]')).toBeTruthy();
     expect(atmosphere?.querySelector('[data-testid="direct-beam"]')).toBeTruthy();
     expect(atmosphere?.querySelector('[data-testid="trace-aperture"]')).toBeTruthy();
     expect(atmosphere?.querySelector("h1")).toBeFalsy();
@@ -38,6 +39,7 @@ describe("responsive layout domains", () => {
     expect(rail?.querySelector("#explanation")).toBeTruthy();
     expect(rail?.querySelector('[data-testid="arrival-spectrum"]')).toBeTruthy();
     expect(rail?.querySelector('[data-testid="airmass-model"]')).toBeTruthy();
-    expect(rail?.querySelector('[data-testid="physics-disclosure"]')).toBeTruthy();
+    expect(rail?.querySelector('[data-testid="physics-disclosure"]')).toBeFalsy();
+    expect(rail?.querySelectorAll('[data-testid="model-equation"]').length).toBe(3);
   });
 });

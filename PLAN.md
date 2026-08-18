@@ -419,6 +419,77 @@ maths and semantic DOM structure belong in automated tests; composition,
 motion, and perceived quality require production-browser evidence. A source
 or built-HTML check is never presented as proof of rendered behaviour.
 
+### Architecture replacement — 2026-08-19
+
+The region-shell rescue above improved overflow but failed the more important
+visual test. Screenshots at phone, portrait, near-square, and desktop aspect
+ratios showed three structural defects: the 90° Sun-to-receiver route left the
+useful frame, narrative copy still collided with the illustration, and the
+three equations were technically present but effectively absent behind a
+collapsed disclosure. These findings supersede the earlier HTML-geometry and
+progressive-disclosure decisions wherever they conflict with this section.
+
+#### Chosen structure
+
+1. **Simulation pane.** One inline SVG, `data-testid="optical-bench"`, owns all
+   physical geometry in a `0 0 1200 720` coordinate system. It uses
+   `preserveAspectRatio="xMidYMid meet"`, so the complete model remains visible
+   instead of being cropped at extreme aspect ratios. The existing elevation
+   state drives SVG transforms, lengths, opacity, and colour.
+2. **Instrument control.** The one labelled native range and its value sit
+   directly below the SVG. They remain the only physics input and keep pointer,
+   touch, and keyboard parity.
+3. **Reading pane.** The current explanation, arrival spectrum, qualitative
+   limitation, horizon conclusion, and three-equation causal chain live in
+   normal semantic flow. The equations are open by default because they are
+   part of the answer, not secondary documentation.
+4. **Privacy coda.** The existing named aperture trigger and local-only coda
+   remain. Their privacy boundary and ephemeral behaviour do not change.
+
+No new package is approved for this rebuild. SVG already supplies the shared
+coordinate space, responsive scaling, gradients, masks, and vector paths the
+piece needs; a UI framework, Three.js, or an animation library would increase
+the regression surface without addressing a missing capability.
+
+#### Composition by available space
+
+- At wide widths, the simulation pane is the visual anchor and the reading pane
+  is a bounded companion column. Neither overlays the other.
+- At tablet and portrait widths, simulation, control, explanation, spectrum,
+  and equations follow one intentional vertical reading order.
+- At phone widths, the SVG keeps a stable aspect ratio, headings stay compact,
+  equations wrap inside their own blocks, and all scientific content remains
+  available. Vertical scroll is expected; horizontal reading scroll is not.
+- Breakpoints only change the page grid. They never change physics coordinates,
+  duplicate the range, or move content into the SVG.
+
+#### Test and review gates
+
+- Built DOM: one `scene`, one `simulation-pane`, one `explanation-pane`, one
+  labelled range, one SVG optical bench with the fixed viewBox, and three
+  always-visible equations outside any `details` or hidden ancestor.
+- Model: existing air-mass, spectral ordering, colour, explanation, horizon,
+  motion, and coda tests remain green.
+- Browser: inspect 320×568, 390×844, 768×1024, 1024×768, 1366×768,
+  1600×1180, 1920×1080, and 2560×1440 at 0°, 45°, and 90°. The SVG, range,
+  explanation, and equations must be visible/reachable; no title or label may
+  overlap the physical route; no horizontal overflow; no app console errors.
+- Interaction: pointer, keyboard, and touch update the same SVG scene and
+  readouts; resize preserves elevation; reduced motion shows the same final
+  state without travel effects; coda open/erase/return still works.
+
+#### Focused implementation sequence
+
+1. Add a structural spec for the optical bench and visible equations; record
+   its narrow RED result without committing a broken branch.
+2. Replace the Sun composition and its layout CSS while preserving the pure
+   physics API and privacy-coda DOM hooks. Return the structural spec and full
+   suite to GREEN.
+3. Run the production-browser matrix and review screenshots. Fix relationships,
+   not individual device coordinates.
+4. Commit the verified architecture and any reviewer correction as focused
+   local milestones. Do not push without separate approval.
+
 ### Production-browser evidence required before accepting visual work
 
 - `pnpm check` green

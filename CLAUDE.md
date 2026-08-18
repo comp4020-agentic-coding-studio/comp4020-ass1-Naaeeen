@@ -255,3 +255,33 @@ stack or brief:
   short form.
 - Don't pre-write `PROCESS.md` moments before the commit that earns them
   exists.
+
+### Responsive architecture correction — SVG optical bench
+
+The 2026-08-19 browser review rejected the region-shell implementation even
+though its mechanical viewport checks were green. At steep elevations and at
+portrait or near-square aspect ratios, absolutely positioned HTML geometry
+still left the Sun/beam outside the useful frame, while headings, labels, and
+the receiver competed for the same space. Passing overflow checks is not proof
+of a composed page.
+
+- Replace the HTML/CSS geometry with one inline SVG optical bench using a
+  fixed `viewBox` and `preserveAspectRatio="xMidYMid meet"`. Sun, direct beam,
+  scattered wavelengths, atmospheric shells, horizon, and receiver share that
+  coordinate system. Do not add viewport-specific physical coordinates.
+- Keep the title, instruction, range control, current explanation, spectrum,
+  model limitation, and equations outside the SVG in semantic document flow.
+  They may never be positioned over the optical geometry.
+- The three linked equations are core explanation, not optional detail. They
+  remain visible without opening a disclosure at every supported width.
+- Desktop uses a two-region optical-bench + reading-panel composition. Tablet
+  and phone stack those same regions in reading order; they do not duplicate
+  controls or hide scientific content.
+- Browser acceptance covers aspect ratios as well as width: 320×568, 390×844,
+  768×1024, 1024×768, 1366×768, 1600×1180, 1920×1080, and 2560×1440, at 0°,
+  45°, and 90°. The entire Sun-to-aperture route must remain visible at every
+  state, with no text/geometry collision and no horizontal reading scroll.
+- Do not add a framework, canvas renderer, or animation package merely to
+  obtain responsiveness. Add a dependency only if a named requirement cannot
+  be met by the existing Astro + SVG + TypeScript stack and record that gate in
+  `PLAN.md` first.

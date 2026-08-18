@@ -455,9 +455,9 @@ body {
 
 /* ---- model and received-light witness -------------------------------- */
 
-/* The payoff is duplicated at the destination as a large physical swatch.
-   It is not a second model: the same --sun-color that paints the disc and
-   arriving beam paints this witness. */
+/* The payoff is duplicated at the destination as a physical swatch. Kept near
+   the aperture so the scene still reads causally, but bounded so it never
+   becomes the dominant information panel. */
 .received-colour {
   position: absolute;
   z-index: 3;
@@ -465,9 +465,9 @@ body {
   left: var(--observer-x);
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  max-width: 12rem;
-  translate: calc(6.4 * var(--u)) calc(2.1 * var(--u));
+  gap: 0.55rem;
+  max-width: 9.5rem;
+  translate: calc(5.9 * var(--u)) calc(1.55 * var(--u));
   color: rgb(255 255 255 / 82%);
   text-shadow: 0 1px 4px rgb(0 0 0 / 70%);
   pointer-events: none;
@@ -475,14 +475,14 @@ body {
 
 .received-swatch {
   flex: 0 0 auto;
-  width: clamp(2.2rem, 5.4vmin, 4.5rem);
+  width: clamp(1.9rem, 4.2vmin, 3.4rem);
   aspect-ratio: 1;
   border: 1px solid rgb(255 255 255 / 55%);
   border-radius: 50%;
   background: var(--sun-color, rgb(255 200 157));
   box-shadow:
-    0 0 0 0.3rem rgb(12 18 13 / 28%),
-    0 0 2.4rem var(--sun-color, rgb(255 200 157));
+    0 0 0 0.22rem rgb(12 18 13 / 28%),
+    0 0 1.8rem var(--sun-color, rgb(255 200 157));
 }
 
 .received-colour small,
@@ -492,70 +492,55 @@ body {
 
 .received-colour small {
   color: rgb(255 255 255 / 58%);
-  font-size: 0.57rem;
-  letter-spacing: 0.13em;
+  font-size: 0.56rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .received-colour strong {
   margin-top: 0.1rem;
-  font-size: clamp(0.66rem, 1.1vmin, 0.8rem);
-  font-weight: 620;
-  line-height: 1.25;
+  font-size: clamp(0.7rem, 1.05vmin, 0.82rem);
+  font-weight: 650;
+  line-height: 1.22;
 }
 
-/* A terse causal chain, overlaid like an instrument engraving rather than
-   boxed into a lesson card. It names the approximation and equations without
-   presenting the resulting values as calibrated measurements. */
-.model-strip {
-  position: absolute;
-  z-index: 2;
-  top: 18%;
-  right: clamp(1rem, 2vw, 2rem);
-  width: min(54rem, 68vw);
-  padding: clamp(0.85rem, 1.35vw, 1.2rem);
-  color: rgb(255 255 255 / 92%);
-  background: linear-gradient(180deg, rgb(17 20 28 / 54%), rgb(17 20 28 / 34%));
-  border: 1px solid rgb(255 255 255 / 18%);
-  border-radius: 1.1rem;
-  box-shadow:
-    0 1.2rem 3rem rgb(3 7 14 / 18%),
-    inset 0 1px 0 rgb(255 255 255 / 10%);
-  backdrop-filter: blur(14px) saturate(128%);
-  text-shadow: 0 1px 4px rgb(0 0 0 / 62%);
-  pointer-events: none;
+/* The model is part of the instrument deck now, not an overlay lesson card.
+   It can still look deliberate, but it no longer competes with the sky for
+   the same coordinates. */
+.science-panel > .model-strip {
+  min-width: 0;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgb(244 241 234 / 16%);
+  color: rgb(244 241 234 / 92%);
 }
 
 .model-kicker {
-  margin: 0 0 0.55rem;
-  color: rgb(255 255 255 / 72%);
-  font-size: clamp(0.76rem, 1vmax, 0.92rem);
+  margin: 0 0 0.6rem;
+  color: rgb(244 241 234 / 66%);
+  font-size: 0.66rem;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
 .model-strip ol {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(0.8rem, 1.2vw, 1.2rem);
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.65rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .model-strip li {
-  position: relative;
   min-width: 0;
-  min-height: 100%;
-  padding-top: 0.65rem;
-  padding-right: 0.1rem;
-  border-top: 1px solid rgb(255 255 255 / 34%);
+  padding-top: 0.55rem;
+  border-top: 1px solid rgb(244 241 234 / 13%);
 }
 
 .model-number {
   display: block;
-  color: rgb(255 255 255 / 56%);
+  color: rgb(244 241 234 / 48%);
   font-size: 0.62rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -565,12 +550,16 @@ body {
 .model-strip strong,
 .model-strip code,
 .model-strip small {
-  display: block;
+  margin-top: 0.28rem;
+  color: rgb(244 241 234 / 74%);
+  font-size: clamp(0.7rem, 0.76vw, 0.8rem);
+  font-weight: 560;
+  line-height: 1.34;
 }
 
 .model-strip strong {
-  font-size: clamp(1.08rem, 1.42vmax, 1.38rem);
-  font-weight: 820;
+  font-size: clamp(0.94rem, 1vw, 1.1rem);
+  font-weight: 760;
   line-height: 1.12;
 }
 
@@ -581,22 +570,22 @@ body {
 }
 
 .model-strip code {
-  margin-top: 0.3rem;
-  color: rgb(255 255 255 / 92%);
+  margin-top: 0.24rem;
+  color: rgb(244 241 234 / 92%);
   font-family: ui-monospace, "Cascadia Mono", monospace;
-  font-size: clamp(0.92rem, 1.12vmax, 1.1rem);
-  font-weight: 720;
-  line-height: 1.34;
+  font-size: clamp(0.74rem, 0.78vw, 0.84rem);
+  font-weight: 700;
+  line-height: 1.26;
   white-space: normal;
   overflow-wrap: anywhere;
 }
 
 .model-strip small {
-  margin-top: 0.36rem;
-  color: rgb(255 255 255 / 80%);
-  font-size: clamp(0.92rem, 1vmax, 1.04rem);
-  font-weight: 620;
-  line-height: 1.42;
+  margin-top: 0.3rem;
+  color: rgb(244 241 234 / 74%);
+  font-size: clamp(0.82rem, 0.95vw, 0.98rem);
+  font-weight: 560;
+  line-height: 1.38;
 }
 
 .model-strip var {
@@ -610,33 +599,60 @@ body {
 }
 
 @media (width >= 60rem) {
-  .model-strip {
-    inset: auto clamp(2rem, 3vw, 3.5rem) 15% auto;
-    width: min(50rem, 52vw);
+  .received-colour {
+    max-width: 10.5rem;
+    translate: calc(6.6 * var(--u)) calc(1.7 * var(--u));
+  }
+
+  .model-strip ol {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.8rem 0.95rem;
   }
 }
 
-@media (width >= 90rem) {
-  .model-strip {
-    inset: auto clamp(2.4rem, 4vw, 4rem) 12% auto;
-    width: min(48rem, 40vw);
-    padding: clamp(0.8rem, 1vw, 1rem);
+@media (width <= 30rem) {
+  .received-colour {
+    inset: auto clamp(0.75rem, 3vw, 1.25rem) clamp(6.4rem, 18%, 7.4rem) auto;
+    align-items: flex-end;
+    max-width: 7.8rem;
+    gap: 0.35rem;
+    translate: none;
+    text-align: right;
+  }
+
+  .received-swatch {
+    width: clamp(1.5rem, 7vw, 2.4rem);
+  }
+
+  .received-colour small {
+    font-size: 0.5rem;
+  }
+
+  .received-colour strong {
+    font-size: 0.68rem;
+  }
+
+  .science-panel > .model-strip {
+    padding-top: 0.65rem;
+  }
+
+  .model-kicker,
+  .model-number {
+    display: none;
+  }
+
+  .model-strip strong {
+    font-size: 0.92rem;
+  }
+
+  .model-strip code {
+    font-size: 0.7rem;
+    line-height: 1.22;
   }
 
   .model-strip small {
-    font-size: clamp(0.82rem, 0.82vw, 0.94rem);
-    line-height: 1.34;
-  }
-
-  .horizon-reveal {
-    top: clamp(4.5rem, 10%, 7.5rem);
-    left: 52%;
-    width: min(40rem, 36vw);
-  }
-
-  .received-colour {
-    max-width: 13rem;
-    translate: calc(7.4 * var(--u)) calc(2.25 * var(--u));
+    font-size: 0.68rem;
+    line-height: 1.3;
   }
 }
 
@@ -645,10 +661,10 @@ body {
 .horizon-reveal {
   position: absolute;
   z-index: 4;
-  top: clamp(8rem, 29%, 14rem);
+  top: clamp(4.6rem, 18%, 8.4rem);
   left: 50%;
-  width: min(38rem, 82vw);
-  translate: -50% calc((1 - var(--horizon-reveal, 0)) * 1rem);
+  width: min(26rem, 68vw);
+  translate: -50% calc((1 - var(--horizon-reveal, 0)) * 0.8rem);
   text-align: center;
   text-shadow: 0 2px 18px rgb(68 24 8 / 38%);
   opacity: var(--horizon-reveal, 0);
@@ -657,39 +673,31 @@ body {
 
 .horizon-reveal p {
   margin: 0;
-  font-size: clamp(1.5rem, 3.8vw, 3.4rem);
+  font-size: clamp(1.15rem, 2.9vw, 2.45rem);
   font-weight: 720;
-  line-height: 0.95;
-  letter-spacing: -0.055em;
+  line-height: 0.97;
+  letter-spacing: -0.04em;
   text-wrap: balance;
 }
 
 .horizon-reveal span {
   display: block;
-  margin-top: 0.55rem;
+  margin-top: 0.42rem;
   color: rgb(255 255 255 / 78%);
-  font-size: clamp(0.68rem, 1.25vw, 1rem);
+  font-size: clamp(0.64rem, 0.95vw, 0.82rem);
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 @media (width >= 60rem) {
   .horizon-reveal {
-    top: clamp(4.5rem, 11%, 7.5rem);
+    top: clamp(3.8rem, 10%, 6.2rem);
     left: 52%;
-    width: min(38rem, 38vw);
+    width: min(24rem, 30vw);
   }
 }
 
 @media (width < 44rem) {
-  .model-strip {
-    top: 0.75rem;
-    right: 0.75rem;
-    left: auto;
-    width: min(11rem, 46vw);
-    padding: 0.58rem 0.64rem;
-  }
-
   .model-kicker {
     display: none;
   }
@@ -759,7 +767,7 @@ body {
     translate: calc(5.8 * var(--u)) calc(2.35 * var(--u));
   }
 
-  .model-strip {
+  .science-panel .model-strip {
     top: 1.15rem;
     right: 1.15rem;
     left: auto;
@@ -897,31 +905,49 @@ body {
 
 /* ---- instrument rail --------------------------------------------------- */
 
-/* Continuous with the ground above it: same colour, no border, no card. */
+.control-deck {
+  position: relative;
+  z-index: 5;
+  flex-shrink: 0;
+}
+
+/* Continuous with the ground above it: same colour family, but organised as a
+   deliberate instrument deck rather than a pile of floating readouts. */
 .rail {
   display: grid;
-  flex-shrink: 0;
-
-  /* Explicit so every child can shrink below its min-content width instead of
-     widening the grid and overflowing a narrow viewport. */
   grid-template-columns: minmax(0, 1fr);
-  width: min(100%, 80rem);
+  width: min(100%, 88rem);
   margin-inline: auto;
-  gap: 0.55rem clamp(1.5rem, 3vw, 3rem);
-  padding: clamp(0.7rem, 1.5vh, 1.25rem) clamp(1rem, 3vw, 3rem);
-  padding-bottom: max(clamp(0.7rem, 1.5vh, 1.25rem), env(safe-area-inset-bottom));
+  gap: 0.9rem;
+  padding: clamp(0.75rem, 1.6vh, 1.35rem) clamp(1rem, 3vw, 2.5rem);
+  padding-bottom: max(clamp(0.75rem, 1.6vh, 1.35rem), env(safe-area-inset-bottom));
   border-top: 1px solid rgb(244 241 234 / 13%);
   background:
-    radial-gradient(circle at 18% 0%, rgb(255 207 146 / 8%), transparent 34%),
+    radial-gradient(circle at 14% 0%, rgb(255 207 146 / 8%), transparent 34%),
     linear-gradient(105deg, #0b130e, #101c15 58%, #0b120e);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 3%),
     0 -1.5rem 4rem rgb(5 10 7 / 28%);
 }
 
-/* Wraps rather than crushing the slider: every other child is flex-shrink: 0,
-   so without this the input would be the only thing able to give — and at some
-   widths it gave almost everything, then overflowed. */
+.rail-primary,
+.rail-sidecar,
+.science-panel {
+  min-width: 0;
+}
+
+.rail-primary {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.science-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: clamp(0.7rem, 1.5vh, 0.95rem);
+}
+
 .rail-control {
   display: flex;
   flex-wrap: wrap;
@@ -937,12 +963,9 @@ body {
   text-transform: uppercase;
 }
 
-/* Still the native control — only its parts are restyled, so keyboard, touch
-   and assistive-tech behaviour are untouched. The box stays 44px for the touch
-   target while the visible track is a thin machined line. */
 .rail input[type="range"] {
   flex: 1 1 11rem;
-  min-width: 9rem; /* a slider you cannot aim at is not a control */
+  min-width: 9rem;
   max-width: 30rem;
   height: 2.75rem;
   margin: 0;
@@ -971,8 +994,6 @@ body {
   );
 }
 
-/* border-box so the declared size includes the ring, which makes the centring
-   offset below exact instead of two pixels low. */
 .rail input[type="range"]::-webkit-slider-thumb {
   box-sizing: border-box;
   width: 0.95rem;
@@ -1000,17 +1021,12 @@ body {
   border-radius: 6px;
 }
 
-/* In forced-colors mode the custom parts are ignored anyway, and a 2px painted
-   track would be worse than nothing — hand the control back to the platform. */
 @media (forced-colors: active) {
   .rail input[type="range"] {
     appearance: auto;
   }
 }
 
-/* Endpoint language belongs beside the track, but only where there is width to
-   spare: on a phone these two words would squeeze the slider down to a stub
-   that is hard to aim at, so they are dropped rather than allowed to crowd it. */
 .rail-end {
   display: none;
   flex-shrink: 0;
@@ -1020,9 +1036,6 @@ body {
   text-transform: uppercase;
 }
 
-/* Deliberately above the two-column breakpoint (60rem): switching them on at
-   44rem meant that between 60rem and here the rail had halved its column width
-   while still carrying both endpoint words, squeezing the track to a stub. */
 @media (width >= 78rem) {
   .rail-end {
     display: inline;
@@ -1039,7 +1052,8 @@ body {
 
 .rail-output {
   color: rgb(244 241 234 / 88%);
-  font-size: clamp(0.8rem, 1.3vw, 0.95rem);
+  font-size: clamp(0.84rem, 1.08vw, 1rem);
+  line-height: 1.45;
   text-wrap: pretty;
 }
 
@@ -1049,14 +1063,10 @@ body {
   font-size: 0.72rem;
 }
 
-/* ---- arrival spectrum -------------------------------------------------- */
-
-/* The instrument readout: what survived the crossing, band by band. A scale
-   underneath names both ends, so the reading never depends on colour alone. */
-.arrival {
+.rail-sidecar > .arrival {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.35rem;
   min-width: 0;
   margin: 0;
 }
@@ -1068,13 +1078,10 @@ body {
   text-transform: uppercase;
 }
 
-/* One ribbon, not six bars: the bands sit flush so the eye reads a continuous
-   spectrum whose profile is the transmission curve. Hairline separators keep
-   each band countable without turning it into a chart. */
 .arrival-ribbon {
   display: flex;
   align-items: flex-end;
-  height: calc(5.4 * var(--u));
+  height: clamp(2.2rem, 4.4vh, 3.8rem);
   min-height: 1.9rem;
   border-bottom: 1px solid rgb(244 241 234 / 34%);
 }
@@ -1110,8 +1117,6 @@ body {
   scale: 1 var(--band-t, 0.6);
 }
 
-/* Wraps rather than widening its column: on a narrow screen the two end labels
-   stack instead of forcing the rail past the viewport. */
 .arrival-scale {
   display: flex;
   flex-wrap: wrap;
@@ -1123,569 +1128,59 @@ body {
 }
 
 @media (width >= 60rem) {
-  /* Wide viewports have room to move the whole instrument toward the middle,
-     which pulls the light path out of the corner. Narrow ones cannot: the low
-     Sun's horizontal reach would run past the right edge. */
   .stage {
-    --observer-x: 34%;
-
-    /* The rail is two columns here, so the sky can carry a larger instrument.
-       This makes the route the desktop hero without letting the overhead Sun
-       collide with the title or leave the atmosphere field. */
-    --u: min(1.25dvh, 1.95vw);
+    --observer-x: 31%;
+    --u: min(1.12dvh, 1.75vw);
   }
 
-  /* The sky's right-hand field was dead space; the arrival spectrum belongs
-     there, reading as an instrument etched on the air beside the beam it
-     measures. It stays a rail child in the DOM so its band names remain in the
-     accessibility tree, outside the role="img" region. The scrim is a soft
-     radial wash with no edges — deliberately not a card. */
-  .arrival {
-    position: absolute;
-    top: 12%;
-    right: clamp(2rem, 4vw, 5rem);
-    z-index: 2;
-    width: min(24rem, 25vw);
-
-    /* No panel, no edge: the text carries its own contrast so the reading sits
-       on the sky rather than in a card floating above it. */
-    text-shadow: 0 1px 4px rgb(8 12 9 / 85%);
+  .overlay {
+    max-width: min(23rem, 30vw);
   }
 
-  /* A hairline running back toward the beam, so the reading is visibly tied to
-     the light it came from. */
-  .arrival::before {
-    content: "";
-    position: absolute;
-    top: 2.1rem;
-    right: 100%;
-    width: clamp(2rem, 7vw, 7rem);
-    height: 1px;
-    background: linear-gradient(to left, rgb(244 241 234 / 40%), rgb(244 241 234 / 0%));
+  .overlay h1 {
+    font-size: clamp(1.7rem, 3vw, 3.2rem);
+  }
+
+  .instruction {
+    font-size: clamp(0.82rem, 1vw, 0.95rem);
   }
 
   .rail {
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.35fr);
-    align-items: center;
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 28rem);
+    align-items: start;
+    gap: 0.9rem clamp(1.2rem, 2.2vw, 1.9rem);
   }
 
-  .rail-note {
-    grid-column: 1 / -1;
-  }
-}
-
-/* ---- observer gateway and footprint coda ----------------------------- */
-
-.trace-aperture {
-  padding: 0;
-  border: 0;
-  color: inherit;
-  background: transparent;
-  font: inherit;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.trace-aperture:focus-visible {
-  outline: 3px solid #fff8e8;
-  outline-offset: calc(0.7 * var(--u));
-  border-radius: 50%;
-}
-
-.trace-aperture:hover .receiver-rim,
-.trace-aperture:focus-visible .receiver-rim,
-.stage.is-trace-ready .receiver-rim {
-  filter: brightness(1.35);
-  scale: 1.06;
-}
-
-.receiver-hint {
-  position: absolute;
-  top: 50%;
-  left: calc(100% + 1.1rem);
-  width: max-content;
-  translate: 0 -50%;
-  color: rgb(255 255 255 / 74%);
-  font-size: clamp(0.55rem, 0.9vmin, 0.68rem);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  opacity: 0;
-  transition:
-    opacity 0.24s ease,
-    translate 0.24s ease;
-}
-
-.stage.is-trace-ready .receiver-hint,
-.trace-aperture:hover .receiver-hint,
-.trace-aperture:focus-visible .receiver-hint {
-  translate: 0.35rem -50%;
-  opacity: 1;
-}
-
-.portal-field {
-  position: absolute;
-  inset: 0;
-  z-index: 19;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.portal-particle {
-  position: absolute;
-  top: var(--observer-y);
-  left: var(--observer-x);
-  width: var(--size);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: var(--sun-color, #ffd3a4);
-  box-shadow: 0 0 1.2rem currentcolor;
-  opacity: 0;
-}
-
-.portal-particle:nth-child(3n) {
-  width: calc(var(--size) * 2.8);
-  aspect-ratio: 5;
-  border-radius: 0;
-  background: #fff5d9;
-}
-
-.portal-particle:nth-child(4n) {
-  background: #83b6ff;
-}
-
-.footprint-coda {
-  --paper: #e9e8e2;
-  --ink: #16171b;
-  --signal: #fa4f38;
-  --electric: #465aff;
-
-  position: absolute;
-  inset: 0;
-  z-index: 20;
-  overflow: auto;
-  color: var(--ink);
-  background:
-    radial-gradient(circle at 82% 14%, rgb(70 90 255 / 13%), transparent 28%),
-    radial-gradient(circle at 15% 88%, rgb(250 79 56 / 12%), transparent 24%),
-    var(--paper);
-  clip-path: circle(0 at var(--observer-x) var(--observer-y));
-  opacity: 0;
-  transition:
-    clip-path 0.72s cubic-bezier(0.76, 0, 0.24, 1),
-    opacity 0.18s linear;
-}
-
-.footprint-coda[hidden] {
-  display: none;
-}
-
-.stage.is-coda-open .footprint-coda {
-  clip-path: circle(155vmax at var(--observer-x) var(--observer-y));
-  opacity: 1;
-}
-
-.coda-grid {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgb(22 23 27 / 6%) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(22 23 27 / 6%) 1px, transparent 1px);
-  background-size: 2rem 2rem;
-  mask-image: linear-gradient(to bottom, black, transparent 86%);
-  pointer-events: none;
-}
-
-.coda-shell {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template:
-    "header header" auto
-    "intro deck" minmax(0, 1fr)
-    "footer footer" auto
-    / minmax(18rem, 0.82fr) minmax(26rem, 1.18fr);
-  gap: clamp(1.4rem, 3vw, 4rem);
-  min-height: 100%;
-  padding: clamp(1.25rem, 3vw, 3rem);
-}
-
-.coda-header {
-  grid-area: header;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-bottom: 0.85rem;
-  border-bottom: 1px solid rgb(22 23 27 / 24%);
-}
-
-.coda-wordmark,
-.coda-local,
-.coda-index,
-.coda-boundary,
-.trace-card-number {
-  margin: 0;
-  font-family: ui-monospace, "Cascadia Mono", monospace;
-  font-size: clamp(0.62rem, 0.9vw, 0.76rem);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.coda-wordmark {
-  font-weight: 700;
-}
-
-.coda-local {
-  color: rgb(22 23 27 / 58%);
-}
-
-.coda-intro {
-  grid-area: intro;
-  align-self: center;
-  max-width: 37rem;
-}
-
-.coda-index {
-  color: var(--signal);
-}
-
-.coda-intro h2 {
-  max-width: 9ch;
-  margin: 0.8rem 0 0;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(3.4rem, 6.4vw, 7.4rem);
-  font-weight: 400;
-  line-height: 0.86;
-  letter-spacing: -0.055em;
-}
-
-.coda-intro h2:focus {
-  outline: none;
-}
-
-.coda-lede {
-  max-width: 46ch;
-  margin: clamp(1.2rem, 2.5vh, 2rem) 0 0;
-  font-size: clamp(0.92rem, 1.25vw, 1.12rem);
-  line-height: 1.55;
-  text-wrap: balance;
-}
-
-.coda-boundary {
-  max-width: 52ch;
-  margin: 1.2rem 0 0;
-  padding-top: 0.8rem;
-  border-top: 1px solid rgb(22 23 27 / 20%);
-  color: rgb(22 23 27 / 58%);
-  line-height: 1.5;
-}
-
-.trace-deck {
-  grid-area: deck;
-  align-self: center;
-  min-width: 0;
-  border-left: 1px solid rgb(22 23 27 / 24%);
-  padding-left: clamp(1.4rem, 3vw, 3rem);
-}
-
-.trace-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: min(50vh, 31rem);
-  padding: clamp(1.3rem, 2.5vw, 2.4rem);
-  border-top: 0.35rem solid var(--signal);
-  background: rgb(255 255 255 / 58%);
-  box-shadow: 0 1.4rem 4rem rgb(22 23 27 / 12%);
-}
-
-.trace-card[hidden] {
-  display: none;
-}
-
-.trace-card::after {
-  content: "";
-  position: absolute;
-  right: 1.4rem;
-  bottom: 1.4rem;
-  width: 0.65rem;
-  aspect-ratio: 1;
-  background: var(--electric);
-  box-shadow:
-    -1rem 0 0 rgb(70 90 255 / 50%),
-    -2rem 0 0 rgb(70 90 255 / 20%);
-}
-
-.trace-card-number {
-  color: var(--signal);
-}
-
-.trace-card h3 {
-  max-width: 17ch;
-  margin: 1rem 0 0;
-  font-size: clamp(1.35rem, 2.7vw, 2.6rem);
-  font-weight: 520;
-  line-height: 1.02;
-  letter-spacing: -0.035em;
-}
-
-.trace-hero {
-  margin: auto 0;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(3.6rem, 8vw, 8.5rem);
-  line-height: 0.9;
-  letter-spacing: -0.06em;
-  color: var(--electric);
-}
-
-.trace-copy {
-  max-width: 48ch;
-  margin: 1.2rem 0 0;
-  color: rgb(22 23 27 / 65%);
-  font-size: 0.88rem;
-  line-height: 1.5;
-}
-
-.trace-micro {
-  margin: 0.7rem 0 0;
-  color: rgb(22 23 27 / 48%);
-  font-family: ui-monospace, "Cascadia Mono", monospace;
-  font-size: 0.64rem;
-  letter-spacing: 0.04em;
-}
-
-.trace-facts {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.7rem;
-  margin: auto 0 0;
-}
-
-.trace-facts div {
-  padding-top: 0.7rem;
-  border-top: 1px solid rgb(22 23 27 / 22%);
-}
-
-.trace-facts dt {
-  color: rgb(22 23 27 / 48%);
-  font-size: 0.64rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.trace-facts dd {
-  overflow-wrap: anywhere;
-  margin: 0.35rem 0 0;
-  font-size: clamp(0.92rem, 1.5vw, 1.25rem);
-  line-height: 1.2;
-}
-
-.trace-facts-wide {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: 2rem;
-}
-
-.zero-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.7rem;
-  margin: auto 0 0;
-}
-
-.zero-grid p {
-  margin: 0;
-  padding-top: 0.7rem;
-  border-top: 1px solid rgb(22 23 27 / 22%);
-}
-
-.zero-grid strong,
-.zero-grid span {
-  display: block;
-}
-
-.zero-grid strong {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(3rem, 6vw, 6rem);
-  font-weight: 400;
-  line-height: 1;
-  color: var(--signal);
-}
-
-.zero-grid span {
-  color: rgb(22 23 27 / 58%);
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.trace-nav {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 0.9rem;
-}
-
-.trace-nav button,
-.coda-footer button {
-  min-height: 2.75rem;
-  padding: 0.6rem 0;
-  border: 0;
-  border-bottom: 1px solid currentcolor;
-  color: var(--ink);
-  background: transparent;
-  font: inherit;
-  font-size: 0.72rem;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-
-.coda-footer button {
-  min-width: 10rem;
-}
-
-.trace-nav button:first-child {
-  text-align: left;
-}
-
-.trace-nav button:last-child {
-  text-align: right;
-}
-
-.trace-nav button:disabled {
-  cursor: default;
-  opacity: 0.3;
-}
-
-.trace-nav output {
-  font-family: ui-monospace, "Cascadia Mono", monospace;
-  font-size: 0.7rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.trace-nav button:focus-visible,
-.coda-footer button:focus-visible {
-  outline: 3px solid var(--electric);
-  outline-offset: 3px;
-}
-
-.coda-footer {
-  grid-area: footer;
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-top: 0.4rem;
-}
-
-.coda-erase {
-  color: var(--signal) !important;
-}
-
-@media (width < 60rem) {
-  .coda-shell {
-    grid-template:
-      "header" auto
-      "intro" auto
-      "deck" minmax(0, 1fr)
-      "footer" auto
-      / minmax(0, 1fr);
-    gap: 0.9rem;
-    padding: max(1rem, env(safe-area-inset-top)) 1rem
-      max(1rem, env(safe-area-inset-bottom));
+  .rail-primary {
+    padding-right: clamp(0rem, 0.7vw, 0.6rem);
   }
 
-  .coda-local {
-    display: none;
+  .rail-sidecar {
+    padding-left: clamp(0.8rem, 1.8vw, 1.4rem);
+    border-left: 1px solid rgb(244 241 234 / 10%);
   }
 
-  .coda-intro {
-    align-self: start;
-  }
-
-  .coda-intro h2 {
-    max-width: 12ch;
-    margin-top: 0.35rem;
-    font-size: clamp(2.2rem, 10.8vw, 3.2rem);
-    line-height: 0.92;
-  }
-
-  .coda-lede {
-    margin-top: 0.65rem;
-    font-size: 0.78rem;
-    line-height: 1.4;
-  }
-
-  .coda-boundary {
-    margin-top: 0.6rem;
-    padding-top: 0.5rem;
-    font-size: 0.57rem;
-  }
-
-  .trace-deck {
-    align-self: stretch;
-    border-top: 1px solid rgb(22 23 27 / 24%);
-    border-left: 0;
-    padding-top: 0.8rem;
-    padding-left: 0;
-  }
-
-  .trace-card {
-    min-height: 15.5rem;
-    padding: 1rem;
-  }
-
-  .trace-card h3 {
-    margin-top: 0.5rem;
-    font-size: 1.25rem;
-  }
-
-  .trace-hero {
-    font-size: clamp(2.8rem, 14vw, 4.4rem);
-  }
-
-  .trace-copy {
-    margin-top: 0.7rem;
-    font-size: 0.72rem;
-  }
-
-  .trace-facts,
-  .trace-facts-wide {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.4rem;
-    margin-top: 0.8rem;
-  }
-
-  .trace-facts dt,
-  .zero-grid span {
-    font-size: 0.54rem;
-  }
-
-  .trace-facts dd {
-    font-size: 0.8rem;
-  }
-
-  .zero-grid {
-    gap: 0.4rem;
-    margin-top: 0.8rem;
-  }
-
-  .zero-grid strong {
-    font-size: 2.8rem;
-  }
-
-  .trace-nav {
-    margin-top: 0.55rem;
-  }
-
-  .coda-footer button {
-    min-width: 0;
+  .science-panel {
+    gap: 1rem;
   }
 }
 
-/* The expanded trace needs a true phone composition rather than the generic
-   narrow layout above. Keep the complete experience in one viewport at the
-   marking size, while preserving 44px controls and readable signal values. */
+@media (width >= 90rem) {
+  .horizon-reveal {
+    width: min(34rem, 32vw);
+  }
+}
+
+@media (width >= 44rem) and (width < 78rem) {
+  .rail {
+    width: min(100%, 46rem);
+  }
+
+  .received-colour {
+    max-width: 9rem;
+  }
+}
+
 @media (width <= 30rem) {
   .rail {
     gap: 0.45rem;
@@ -1693,12 +1188,13 @@ body {
     padding-left: max(0.875rem, env(safe-area-inset-left));
   }
 
-  .model-strip {
-    top: 0.75rem;
-    right: 0.75rem;
-    left: auto;
-    width: min(11rem, 46vw);
-    padding: 0.58rem 0.64rem;
+  .rail-sidecar {
+    padding-top: 0.55rem;
+    border-top: 1px solid rgb(244 241 234 / 10%);
+  }
+
+  .science-panel {
+    gap: 0.55rem;
   }
 
   .model-strip ol {
@@ -1837,14 +1333,24 @@ body {
 /* A 1366x768 laptop is wide but not tall. The normal two-column coda kept its
    desktop spacing after the trace grew, putting the footer below the fold. */
 @media (width >= 60rem) and (height <= 52rem) {
+  .rail {
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, 23rem);
+    gap: 0.75rem 1rem;
+    padding-top: 0.7rem;
+    padding-bottom: max(0.7rem, env(safe-area-inset-bottom));
+  }
+
+  .science-panel {
+    gap: 0.7rem;
+  }
+
+  .model-strip ol {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .coda-shell {
     gap: clamp(0.65rem, 1.7vh, 1rem);
     padding: clamp(1rem, 2vw, 1.5rem);
-  }
-
-  .model-strip {
-    right: clamp(1.5rem, 2.5vw, 2.25rem);
-    width: min(40rem, 37vw);
   }
 
   .model-kicker,
@@ -2124,5 +1630,182 @@ body {
 
   .portal-particle {
     display: none;
+  }
+}
+
+.control-deck .arrival {
+  position: relative;
+  top: auto;
+  right: auto;
+  z-index: auto;
+  width: 100%;
+  text-shadow: none;
+}
+
+.science-panel .model-strip {
+  position: relative;
+  inset: auto;
+  width: min(100%, 38rem);
+  margin: 0;
+  padding: clamp(0.9rem, 2.4vw, 1.2rem);
+}
+
+@media (width >= 60rem) {
+  .control-deck .rail {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 28rem);
+    align-items: start;
+  }
+}
+
+/* ---- responsive rescue ------------------------------------------------- */
+
+.stage-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(22rem, 56svh);
+  container-type: inline-size;
+  container-name: hero-shell;
+}
+
+.stage-shell > .overlay {
+  grid-column: 1;
+  grid-row: 1;
+  position: relative;
+  z-index: 2;
+  max-width: min(26rem, 100%);
+  padding: clamp(1rem, 4vw, 2rem) clamp(1rem, 5vw, 3rem) 0;
+}
+
+.stage-shell > .overlay h1 {
+  max-width: 8ch;
+  font-size: clamp(2.2rem, 9vw, 4.1rem);
+}
+
+.stage-shell > .overlay .instruction {
+  max-width: 16ch;
+  font-size: clamp(0.95rem, 3.2vw, 1.08rem);
+}
+
+.stage-shell > .atmosphere {
+  grid-column: 1;
+  grid-row: 2;
+  min-height: clamp(22rem, 56svh, 38rem);
+}
+
+.stage-shell .horizon-reveal {
+  top: clamp(1.4rem, 8%, 4rem);
+  left: 50%;
+  width: min(24rem, calc(100% - 2rem));
+}
+
+.stage-shell .horizon-reveal p {
+  font-size: clamp(1.15rem, 5vw, 2.3rem);
+}
+
+.stage-shell .horizon-reveal span {
+  font-size: clamp(0.66rem, 1.8vw, 0.86rem);
+}
+
+.stage-shell .received-colour {
+  max-width: min(9.5rem, 38vw);
+}
+
+@container hero-shell (width >= 70rem) {
+  .stage-shell {
+    grid-template-columns: minmax(18rem, 28rem) minmax(0, 1fr);
+    grid-template-rows: minmax(34rem, 72dvh);
+    align-items: stretch;
+  }
+
+  .stage-shell > .overlay {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+    max-width: 24rem;
+    padding-top: clamp(1.2rem, 2.6vw, 2.2rem);
+    padding-right: 0;
+  }
+
+  .stage-shell > .overlay h1 {
+    font-size: clamp(2.8rem, 5.3vw, 5rem);
+  }
+
+  .stage-shell > .overlay .instruction {
+    font-size: clamp(0.95rem, 1.2vw, 1.08rem);
+  }
+
+  .stage-shell > .atmosphere {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    min-height: clamp(34rem, 72dvh, 56rem);
+  }
+
+  .stage-shell .horizon-reveal {
+    top: clamp(3.4rem, 12%, 6.2rem);
+    left: 58%;
+    width: min(22rem, 28cqi);
+  }
+
+  .stage-shell .received-colour {
+    max-width: min(10.5rem, 26vw);
+  }
+}
+
+@container hero-shell (width >= 90rem) {
+  .stage-shell > .overlay {
+    max-width: 25rem;
+  }
+
+  .stage-shell .horizon-reveal {
+    width: min(24rem, 24cqi);
+  }
+}
+
+@media (width < 44rem) {
+  .stage-shell {
+    grid-template-rows: auto minmax(20rem, 46svh);
+  }
+
+  .stage-shell > .overlay {
+    max-width: 100%;
+    padding-inline: 1rem;
+  }
+
+  .stage-shell > .overlay h1 {
+    max-width: 7ch;
+    font-size: clamp(2rem, 12vw, 3.5rem);
+  }
+
+  .stage-shell > .overlay .instruction {
+    max-width: 14ch;
+    font-size: clamp(0.92rem, 4.4vw, 1.02rem);
+  }
+
+  .stage-shell > .atmosphere {
+    min-height: clamp(20rem, 46svh, 26rem);
+  }
+
+  .stage-shell .horizon-reveal {
+    top: 1rem;
+    width: calc(100% - 2rem);
+  }
+
+  .stage-shell .horizon-reveal p {
+    font-size: clamp(1.1rem, 7vw, 1.7rem);
+  }
+}
+
+@media (width >= 60rem) and (height <= 52rem) {
+  .rail {
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, 23rem);
+    gap: 0.75rem 1rem;
+  }
+
+  .science-panel {
+    gap: 0.7rem;
+  }
+
+  .model-strip ol {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

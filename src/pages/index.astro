@@ -41,6 +41,7 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
     aria-label="The Sun Never Turned Red: an interactive atmospheric explainer"
     style={sceneStyleAttr}
   >
+    <div class="stage-shell">
     <div
       class="atmosphere"
       data-testid="atmosphere"
@@ -152,30 +153,6 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
         </span>
       </div>
 
-      <aside class="model-strip" data-testid="airmass-model" aria-label="The three-step light model">
-        <p class="model-kicker">One slider · one causal model</p>
-        <ol>
-          <li>
-            <span class="model-number">01</span>
-            <strong>Relative air mass <output data-testid="airmass-value">×{scene.pathAmount.toFixed(1)}</output></strong>
-            <code data-testid="model-equation">m(h) = [sin h + 0.50572(h + 6.07995)<sup>−1.6364</sup>]<sup>−1</sup></code>
-            <small><var>h</var> is apparent elevation, and <var>m</var> is relative air mass. At 10°, the beam crosses about 5.6x as much atmosphere as it does at 90°.</small>
-          </li>
-          <li>
-            <span class="model-number">02</span>
-            <strong>Fourth power</strong>
-            <code data-testid="model-equation">τ<sub>R</sub>(λ) ∝ λ<sup>−4</sup></code>
-            <small><var>λ</var> is wavelength. Rayleigh scattering makes 450 nm blue light scatter about 4.4x more strongly than 650 nm red light.</small>
-          </li>
-          <li>
-            <span class="model-number">03</span>
-            <strong>What survives</strong>
-            <code data-testid="model-equation">T(λ,h) = e<sup>−m(h)τ<sub>R</sub>(λ)</sup></code>
-            <small><var>T</var> is transmitted direct light. A longer path removes more blue, so the direct beam arrives dimmer and warmer.</small>
-          </li>
-        </ol>
-      </aside>
-
       <div
         class="horizon-reveal"
         data-testid="horizon-reveal"
@@ -191,7 +168,7 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
       <p class="scene-label scene-label-scatter">blue redirected</p>
     </div>
 
-    <header class="overlay">
+    <header class="overlay" data-testid="hero-copy">
       <nav aria-label="Primary">
         <a href="./">Home</a>
       </nav>
@@ -200,61 +177,90 @@ const PORTAL_PARTICLES = Array.from({ length: 24 }, (_unused, index) => {
         Move the Sun toward the horizon.
       </p>
     </header>
-
-    <div class="rail" data-testid="rail">
-      <div class="rail-control">
-        <label for="elevation">Sun elevation</label>
-        <span class="rail-end" aria-hidden="true">horizon</span>
-        <input
-          type="range"
-          id="elevation"
-          name="elevation"
-          min={MIN_ELEVATION}
-          max={MAX_ELEVATION}
-          step="1"
-          value={INITIAL_ELEVATION}
-        />
-        <span class="rail-end" aria-hidden="true">overhead</span>
-        <span class="rail-value" data-testid="value-readout" aria-hidden="true">
-          {Math.round(scene.elevationDeg)}°
-        </span>
-      </div>
-
-      <!-- Deliberately a sibling of the atmosphere, not a child: on desktop it
-           is positioned into the sky's empty right-hand field, but staying
-           outside the role="img" region keeps every band name readable by
-           assistive technology. -->
-      <figure class="arrival" data-testid="arrival-spectrum">
-        <figcaption class="arrival-caption">What reached the aperture</figcaption>
-        <div class="arrival-ribbon">
-          {
-            SPECTRUM_BANDS.map((band, i) => (
-              <span
-                class="arrival-band"
-                data-testid="spectrum-band"
-                data-band={band.label}
-                style={`--i:${i};--tint:${band.tint};--band-t:var(--band-${i});`}
-              >
-                <span class="arrival-band-fill"></span>
-                <span class="visually-hidden">{band.label}</span>
-              </span>
-            ))
-          }
-        </div>
-        <div class="arrival-scale">
-          <span>blue — redirected</span>
-          <span>red — gets through</span>
-        </div>
-      </figure>
-
-      <output class="rail-output" for="elevation" id="explanation" aria-live="off"
-        >{scene.explanation}</output
-      >
-
-      <p class="rail-note" data-testid="model-note">
-        Qualitative atmospheric model — equations are physical approximations; colour is illustrative, not calibrated.
-      </p>
     </div>
+
+    <section class="control-deck" data-testid="control-deck">
+      <div class="rail" data-testid="rail">
+        <div class="rail-primary">
+          <div class="rail-control">
+            <label for="elevation">Sun elevation</label>
+            <span class="rail-end" aria-hidden="true">horizon</span>
+            <input
+              type="range"
+              id="elevation"
+              name="elevation"
+              min={MIN_ELEVATION}
+              max={MAX_ELEVATION}
+              step="1"
+              value={INITIAL_ELEVATION}
+            />
+            <span class="rail-end" aria-hidden="true">overhead</span>
+            <span class="rail-value" data-testid="value-readout" aria-hidden="true">
+              {Math.round(scene.elevationDeg)}°
+            </span>
+          </div>
+
+          <output class="rail-output" for="elevation" id="explanation" aria-live="off"
+            >{scene.explanation}</output
+          >
+
+          <p class="rail-note" data-testid="model-note">
+            Qualitative atmospheric model — equations are physical approximations; colour is illustrative, not calibrated.
+          </p>
+        </div>
+
+        <div class="rail-sidecar" data-testid="rail-sidecar">
+          <div class="science-panel" data-testid="science-panel">
+            <figure class="arrival" data-testid="arrival-spectrum">
+              <figcaption class="arrival-caption">What reached the aperture</figcaption>
+              <div class="arrival-ribbon">
+                {
+                  SPECTRUM_BANDS.map((band, i) => (
+                    <span
+                      class="arrival-band"
+                      data-testid="spectrum-band"
+                      data-band={band.label}
+                      style={`--i:${i};--tint:${band.tint};--band-t:var(--band-${i});`}
+                    >
+                      <span class="arrival-band-fill"></span>
+                      <span class="visually-hidden">{band.label}</span>
+                    </span>
+                  ))
+                }
+              </div>
+              <div class="arrival-scale">
+                <span>blue — redirected</span>
+                <span>red — gets through</span>
+              </div>
+            </figure>
+
+            <aside class="model-strip" data-testid="airmass-model" aria-label="The three-step light model">
+              <p class="model-kicker">One slider · one causal model</p>
+              <ol>
+                <li>
+                  <span class="model-number">01</span>
+                  <strong>Relative air mass <output data-testid="airmass-value">×{scene.pathAmount.toFixed(1)}</output></strong>
+                  <code data-testid="model-equation">m(h) = [sin h + 0.50572(h + 6.07995)<sup>−1.6364</sup>]<sup>−1</sup></code>
+                  <small><var>h</var> is apparent elevation, and <var>m</var> is relative air mass. At 10°, the beam crosses about 5.6x as much atmosphere as it does at 90°.</small>
+                </li>
+                <li>
+                  <span class="model-number">02</span>
+                  <strong>Fourth power</strong>
+                  <code data-testid="model-equation">τ<sub>R</sub>(λ) ∝ λ<sup>−4</sup></code>
+                  <small><var>λ</var> is wavelength. Rayleigh scattering makes 450 nm blue light scatter about 4.4x more strongly than 650 nm red light.</small>
+                </li>
+                <li>
+                  <span class="model-number">03</span>
+                  <strong>What survives</strong>
+                  <code data-testid="model-equation">T(λ,h) = e<sup>−m(h)τ<sub>R</sub>(λ)</sup></code>
+                  <small><var>T</var> is transmitted direct light. A longer path removes more blue, so the direct beam arrives dimmer and warmer.</small>
+                </li>
+              </ol>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </section>
     <section
       class="footprint-coda"
       data-testid="footprint-coda"

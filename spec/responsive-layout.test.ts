@@ -1,23 +1,34 @@
-import { readFileSync } from "node:fs";
+﻿import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { JSDOM } from "jsdom";
 import { describe, expect, it } from "vitest";
 
 const css = readFileSync(resolve("src/styles/global.css"), "utf8");
+const doc = new JSDOM(readFileSync(resolve("dist/index.html"), "utf8")).window.document;
 
-describe("responsive layout: viewport-specific composition", () => {
-  it("caps the bottom rail instead of letting it scale endlessly with desktop width", () => {
-    expect(css).toMatch(/\.rail\s*\{[\s\S]*width:\s*min\(100%, 80rem\);[\s\S]*margin-inline:\s*auto;/);
+describe("responsive layout: stage and instrument deck", () => {
+  it("keeps the arrival spectrum and science model inside the instrument deck", () => {
+    const rail = doc.querySelector('[data-testid="rail"]');
+    const arrival = doc.querySelector('[data-testid="arrival-spectrum"]');
+    const model = doc.querySelector('[data-testid="airmass-model"]');
+    const atmosphere = doc.querySelector('[data-testid="atmosphere"]');
+
+    expect(rail).toBeTruthy();
+    expect(arrival).toBeTruthy();
+    expect(model).toBeTruthy();
+    expect(rail?.contains(arrival ?? null)).toBe(true);
+    expect(rail?.contains(model ?? null)).toBe(true);
+    expect(atmosphere?.contains(model ?? null)).toBe(false);
   });
 
-  it("keeps the narrow science strip clear of the title across phone widths", () => {
-    expect(css).toMatch(/@media \(width < 44rem\) \{[\s\S]*\.model-strip\s*\{[\s\S]*left:\s*auto;[\s\S]*width:\s*min\(11rem, 46vw\);[\s\S]*\}[\s\S]*\.model-strip ol\s*\{[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\);/);
+  it("ships a dedicated rail sidecar instead of floating teaching panels over the sky", () => {
+    expect(doc.querySelector('[data-testid="rail-sidecar"]')).toBeTruthy();
+    expect(css).toMatch(/\.rail-sidecar\s*\{/);
+    expect(css).toMatch(/@media \(width >= 60rem\) \{[\s\S]*?\.control-deck \.rail\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0, 1fr\) minmax\(18rem, 28rem\)/);
   });
 
-  it("ships a middle breakpoint so tablet widths do not reuse phone or wide-desktop positions", () => {
-    expect(css).toMatch(/@media \(width >= 44rem\) and \(width < 78rem\) \{[\s\S]*\.received-colour\s*\{[\s\S]*max-width:\s*9\.75rem;[\s\S]*\}[\s\S]*\.model-strip\s*\{[\s\S]*width:\s*min\(17rem, 33vw\);/);
-  });
-
-  it("keeps a separate wide-screen rule for the expanded science strip", () => {
-    expect(css).toMatch(/@media \(width >= 90rem\) \{[\s\S]*\.model-strip\s*\{[\s\S]*width:\s*min\(48rem, 40vw\);/);
+  it("reasserts the deck layout as the final positioning rule for the spectrum and model", () => {
+    expect(css).toMatch(/\.control-deck \.arrival\s*\{[\s\S]*?position:\s*relative;[\s\S]*?top:\s*auto;[\s\S]*?right:\s*auto;/);
+    expect(css).toMatch(/\.science-panel \.model-strip\s*\{[\s\S]*?position:\s*relative;[\s\S]*?inset:\s*auto;/);
   });
 });
